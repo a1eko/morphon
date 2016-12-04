@@ -7,7 +7,7 @@ import numpy as np
 
 
 title = 'Neuron plots'
-morphology  = 'in2.swc'
+morphology  = 'in.swc'
 plot = 'out3b.pdf'
 
 def colorize(neurite):

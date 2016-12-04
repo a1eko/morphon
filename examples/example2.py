@@ -6,7 +6,7 @@ import json
 
 
 title = 'Basic morphometrics'
-morphology  = 'in2.swc'
+morphology  = 'in.swc'
 metrics = 'out.json'
 
 m = Morpho(morphology)

@@ -3,7 +3,7 @@ from morphon import Morpho
 
 
 title = 'Created morphology'
-morphology  = 'out1.swc'
+morphology  = 'out.swc'
 
 m = Morpho()
 root = m.add('soma', [0, 0, 0], 10)

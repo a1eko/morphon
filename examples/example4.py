@@ -5,7 +5,7 @@ import numpy as np
 
 
 title = 'Scholl analysis'
-morphology  = 'in2.swc'
+morphology  = 'in.swc'
 plot = 'out4.pdf'
 h = 10.0
 

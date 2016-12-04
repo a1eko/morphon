@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 title = 'Neuron 3D plot'
-morphology  = 'in2.swc'
+morphology  = 'in.swc'
 
 print(title)
 print('neuron:', morphology)

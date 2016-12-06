@@ -1,17 +1,18 @@
 from __future__ import division
 
-from math import sqrt, pi, sin, cos
-from copy import deepcopy
-from tree import Tree
+import math
+import copy
 import numpy as np
+
+from tree import Tree
 
 
 def rotation_matrix(axis, theta):
     axis = np.asarray(axis)
     theta = np.asarray(theta)
-    axis = axis/sqrt(np.dot(axis, axis))
-    a = cos(theta/2)
-    b, c, d = -axis*sin(theta/2)
+    axis = axis/math.sqrt(np.dot(axis, axis))
+    a = math.cos(theta/2)
+    b, c, d = -axis*math.sin(theta/2)
     aa, bb, cc, dd = a*a, b*b, c*c, d*d
     bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
     return np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
@@ -65,7 +66,13 @@ class Morpho(Tree):
 
     def coord(self, ident):
         n, xyz, d = self.value(ident)
-        return deepcopy(xyz)
+        return copy.deepcopy(xyz)
+
+    def coords(self, idents):
+        x = [self.coord(i)[0] for i in idents]
+	y = [self.coord(i)[1] for i in idents]
+	z = [self.coord(i)[2] for i in idents]
+        return x, y, z
 
     def diam(self, ident):
         n, xyz, d = self.value(ident)
@@ -82,14 +89,14 @@ class Morpho(Tree):
         h = self.length(ident)
         r1 = self.diam(ident)/2
         r0 = self.diam(parent)/2 if parent is not None else r1
-        return pi*(r0+r1)*sqrt((r0-r1)*(r0-r1) + h*h)
+        return math.pi*(r0+r1)*math.sqrt((r0-r1)*(r0-r1) + h*h)
 
     def volume(self, ident):
         parent = self.parent(ident)
         h = self.length(ident)
         r1 = self.diam(ident)/2
         r0 = self.diam(parent)/2 if parent is not None else 0
-        return pi/3*(r0*r0 + r0*r1 + r1*r1)*h
+        return math.pi/3*(r0*r0 + r0*r1 + r1*r1)*h
 
     def distance(self, ident, radial=False):
 	if radial:
@@ -136,3 +143,18 @@ class Morpho(Tree):
         c = self.coord(ident)
         self.nodes[ident].value[1] = np.dot(rotation_matrix(axis, angle), c)
 
+    def sections(self, ident=None, depth=True, reverse=False, with_parent=False, 
+        neurites=[], orders=[], degrees=[]):
+        selected = [b for b in self.branches(ident=ident, depth=depth, reverse=reverse)]
+	for section in selected:
+	    if with_parent:
+	        parent = self.parent(section[0]) 
+		if parent is not None:
+	            section.insert(0, parent)
+	if neurites:
+	    selected= filter(lambda b: self.neurite(b[-1]) in neurites, selected)
+	if orders:
+	    selected= filter(lambda b: self.order(b[-1]) in orders, selected)
+	if degrees:
+	    selected= filter(lambda b: self.degree(b[-1]) in degrees, selected)
+        return selected

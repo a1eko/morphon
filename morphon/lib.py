@@ -7,7 +7,7 @@ def measure(m):
     morphometrics = {}
     all_nodes = [i for i in m.traverse()]
     all_branches = [b for b in m.branches()]
-    neurites = set([m.neurite(i) for i in all_nodes])
+    neurites = set(m.neurite(i) for i in all_nodes)
     for neurite in neurites:
         measures = {}
         branches = filter(lambda b: m.neurite(b[0])==neurite, all_branches)
@@ -23,11 +23,11 @@ def measure(m):
         measures['length'] = length
         measures['volume'] = volume
         measures['extent euclidean'] = [s for s in m.size(idents=nodes)]
-        measures['extent radial'] = max([m.distance(i, radial=True) for i in nodes])
-        measures['extent path'] = max([m.distance(i) for i in tips])
+        measures['extent radial'] = max(m.distance(i, radial=True) for i in nodes)
+        measures['extent path'] = max(m.distance(i) for i in tips)
         measures['diameters'] = np.mean(diams), np.std(diams), np.min(diams), np.max(diams)
         measures['diameter effective'] = area/(pi*length)
-        measures['order'] = max([m.order(i) for i in tips])
+        measures['order'] = max(m.order(i) for i in tips)
         measures['stems'] = len(stems)
         measures['bifurcations'] = len(bifurcations)
         measures['tips'] = len(tips)

@@ -6,6 +6,10 @@ from morphon import Morpho, measure, plot
 import json
 import argparse
 
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+
 
 def parse():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -15,10 +19,29 @@ def parse():
 
 def main():
     args = parse()
-    m = Morpho(args.file)
+    morphology = args.file
+    m = Morpho(morphology)
+
+    neurites = set(m.neurite(i) for i in m.traverse())
+    colors = {'soma': 'black', 'dend': 'blue', 'apic': 'green', 'axon': 'red'}
+    thickness = {'soma': 5, 'dend': 1, 'apic': 1, 'axon': 0.5}
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_title(morphology)
+    ax.set_xlabel('x')
+    ax.set_ylabel('z')
+    ax.set_zlabel('y')
+    for neurite in neurites:
+        plot(m, ax, projection='3d', 
+	    neurites=[neurite],
+	    color=colors[neurite],
+	    linewidth=thickness[neurite],
+	    equal_scales=True)
+    plt.show()
+
     metrics = measure(m)
-    json.dumps(metrics, indent=4, sort_keys=True)
-    #plot(m, ax, projection='3d', equal_scales=True)
+    print json.dumps(metrics, indent=4, sort_keys=True)
 
 
 if __name__ == "__main__":

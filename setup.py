@@ -7,6 +7,9 @@ setup(name='morphon',
       author_email='akozlov@kth.se',
       license='BSD',
       packages=['morphon'],
+      scripts=[
+          'apps/mview',
+      ],
       install_requires=[
           'numpy',
       ],

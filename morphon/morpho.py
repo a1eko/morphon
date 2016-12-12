@@ -7,7 +7,7 @@ import numpy as np
 from tree import Tree
 
 
-def rotation_matrix(axis, theta):
+def _rotation_matrix(axis, theta):
     axis = np.asarray(axis)
     theta = np.asarray(theta)
     axis = axis/math.sqrt(np.dot(axis, axis))
@@ -18,6 +18,21 @@ def rotation_matrix(axis, theta):
     return np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
                      [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
                      [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
+
+def _unit_vector(vector):
+    return vector / np.linalg.norm(vector)
+
+def _angle_between(v1, v2):
+    v1_u = _unit_vector(v1)
+    v2_u = _unit_vector(v2)
+    angle = np.arccos(np.dot(v1_u, v2_u))
+    if np.isnan(angle):
+        if (v1_u == v2_u).all():
+            return 0.0
+        else:
+            return np.pi
+    return angle
+
 
 Neurite = {'soma': 1, 'axon': 2, 'dend': 3, 'apic': 4}
 Neurites = {v: k for k, v in Neurite.items()}
@@ -42,6 +57,14 @@ class Morpho(Tree):
                 Tree.add(self, ident=i, value=[n, np.array([x, y, z]), 2*r], parent=p)
         else:
             raise Error('unknown file format of ' + source)
+
+    def copy(self, ident=None):
+        morpho = Morpho()
+        for item in self.traverse(ident):
+            morpho.nodes[item] = copy.deepcopy(self.nodes[item])
+        if ident is not None:
+            morpho.nodes[ident].parent = None
+        return morpho
 
     def save(self, target, header=''):
         data = []
@@ -70,8 +93,8 @@ class Morpho(Tree):
 
     def coords(self, idents):
         x = [self.coord(i)[0] for i in idents]
-	y = [self.coord(i)[1] for i in idents]
-	z = [self.coord(i)[2] for i in idents]
+        y = [self.coord(i)[1] for i in idents]
+        z = [self.coord(i)[2] for i in idents]
         return x, y, z
 
     def diam(self, ident):
@@ -99,16 +122,49 @@ class Morpho(Tree):
         return math.pi/3*(r0*r0 + r0*r1 + r1*r1)*h
 
     def distance(self, ident, radial=False):
-	if radial:
+        if radial:
             c0 = self.coord(self.root())
             c1 = self.coord(ident)
             dist = np.linalg.norm(c0-c1)
-	else:
+        else:
             dist = sum(self.length(item) for item in self.traverse(ident, reverse=True))
         return dist
 
+    def angle(self, ident):
+	theta = 0.0
+	node = self.nodes[ident]
+	if not self.is_root(ident):
+            if self.is_bifurcation(ident):
+	        c0 = self.coord(node.children[0])
+	        c1 = self.coord(node.children[1])
+	        v0 = c0 - self.coord(ident)
+	        v1 = c1 - self.coord(ident)
+	        theta = _angle_between(v0, v1)
+            elif not self.is_leaf(ident):
+	        c0 = self.coord(node.children[0])
+	        c1 = self.coord(node.parent)
+	        v0 = c0 - self.coord(ident)
+	        v1 = self.coord(ident) - c1
+	        theta = _angle_between(v0, v1)
+        return theta
+
+    def curvature(self, ident):
+	scalar_curvature = 0.0
+        if not self.is_root(ident) and not self.is_bifurcation(ident) and not self.is_leaf(ident):
+	    node = self.nodes[ident]
+	    A = self.coord(node.parent)
+	    B = self.coord(ident)
+	    C = self.coord(node.children[0])
+	    a = np.linalg.norm(C - B)
+	    b = np.linalg.norm(C - A)
+	    c = np.linalg.norm(B - A)
+	    s = (a + b + c) / 2
+	    radius_of_curvature = a*b*c / 4 / np.sqrt(s * (s - a) * (s - b) * (s - c))
+	    scalar_curvature = 1 / radius_of_curvature
+        return scalar_curvature
+
     def bounds(self, ident=None, reverse=False, idents=[]):
-	if not idents:
+        if not idents:
             if ident is None:
                 ident = self.root()
             cmin = self.coord(ident)
@@ -117,7 +173,7 @@ class Morpho(Tree):
                 c = self.coord(item)
                 cmin = np.minimum(c, cmin)
                 cmax = np.maximum(c, cmax)
-	else:
+        else:
             cmin = self.coord(idents[0])
             cmax = cmin
             for item in idents:
@@ -130,31 +186,79 @@ class Morpho(Tree):
         cmin, cmax = self.bounds(ident, reverse=reverse, idents=idents)
         return cmax-cmin
 
-    def translate(self, ident, shift):
-        self.nodes[ident].value[1] += np.asarray(shift)
+    #def translate(self, ident, shift):
+    #    self.nodes[ident].value[1] += np.asarray(shift)
 
-    def scale(self, ident, factor, coord=True, diam=False):
-        if coord:
-            self.nodes[ident].value[1] *= np.asarray(factor)
-        if diam:
-            self.nodes[ident].value[2] *= np.asarray(factor).mean()
+    #def scale(self, ident, factor, coord=True, diam=False):
+    #    if coord:
+    #        self.nodes[ident].value[1] *= np.asarray(factor)
+    #    if diam:
+    #        self.nodes[ident].value[2] *= np.asarray(factor).mean()
 
-    def rotate(self, ident, axis, angle):
-        c = self.coord(ident)
-        self.nodes[ident].value[1] = np.dot(rotation_matrix(axis, angle), c)
+    #def rotate(self, ident, axis, angle):
+    #    c = self.coord(ident)
+    #    self.nodes[ident].value[1] = np.dot(_rotation_matrix(axis, angle), c)
 
-    def sections(self, ident=None, depth=True, reverse=False, with_parent=False, 
+    def translate(self, shift, ident=None):
+        for item in self.traverse(ident):
+            self.nodes[item].value[1] += np.asarray(shift)
+
+    def scale(self, factor, coord=True, diam=False, ident=None):
+        for item in self.traverse(ident):
+            if coord:
+                self.nodes[item].value[1] *= np.asarray(factor)
+            if diam:
+                self.nodes[item].value[2] *= np.asarray(factor).mean()
+
+    def rotate(self, axis, angle, ident=None):
+        for item in self.traverse(ident):
+            c = self.coord(item)
+            self.nodes[item].value[1] = np.dot(_rotation_matrix(axis, angle), c)
+
+    def sections(self, ident=None, reverse=False, with_parent=False,
         neurites=[], orders=[], degrees=[]):
-        selected = [b for b in self.branches(ident=ident, depth=depth, reverse=reverse)]
-	for section in selected:
-	    if with_parent:
-	        parent = self.parent(section[0]) 
-		if parent is not None:
-	            section.insert(0, parent)
-	if neurites:
-	    selected= filter(lambda b: self.neurite(b[-1]) in neurites, selected)
-	if orders:
-	    selected= filter(lambda b: self.order(b[-1]) in orders, selected)
-	if degrees:
-	    selected= filter(lambda b: self.degree(b[-1]) in degrees, selected)
+        selected = [b for b in self.branches(ident=ident, reverse=reverse)]
+        for section in selected:
+            if with_parent:
+                parent = self.parent(section[0])
+                if parent is not None:
+                    section.insert(0, parent)
+                else:
+                    section.insert(0, section[0]) # fake insert
+        if neurites:
+            selected= filter(lambda b: self.neurite(b[-1]) in neurites, selected)
+        if orders:
+            selected= filter(lambda b: self.order(b[-1]) in orders, selected)
+        if degrees:
+            selected= filter(lambda b: self.degree(b[-1]) in degrees, selected)
+        return selected
+
+    def points(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
+        selected = [i for i in self.traverse(ident=ident, reverse=reverse)]
+        if neurites:
+            selected= filter(lambda i: self.neurite(i) in neurites, selected)
+        if orders:
+            selected= filter(lambda i: self.order(i) in orders, selected)
+        if degrees:
+            selected= filter(lambda i: self.degree(i) in degrees, selected)
+        return selected
+
+    def tips(self, ident=None, neurites=[], orders=[], degrees=[]):
+        idents = self.points(ident=ident, reverse=False,
+            neurites=neurites, orders=orders, degrees=degrees)
+        selected = filter(lambda i: self.is_leaf(i), idents)
+        return selected
+
+    def stems(self, ident=None, neurites=[]):
+        if ident:
+	    reverse = True
+        else:
+	    reverse = False
+        stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1])
+        return [s[0] for s in stem_sections]
+
+    def bifurcations(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
+        idents = self.points(ident=ident, reverse=reverse,
+            neurites=neurites, orders=orders, degrees=degrees)
+        selected = filter(lambda i: self.is_bifurcation(i), idents)
         return selected

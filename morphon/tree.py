@@ -1,4 +1,4 @@
-from copy import deepcopy
+import copy
 
 
 class Node:
@@ -40,6 +40,9 @@ class Tree:
 
     def is_fork(self, ident):
         return len(self.nodes[ident].children) > 1
+
+    def is_bifurcation(self, ident):
+        return len(self.nodes[ident].children) == 2
 
     def value(self, ident):
         return self.nodes[ident].value
@@ -161,9 +164,8 @@ class Tree:
         if ident is None:
             ident = self.root()
         tree = Tree()
-        nodes = deepcopy(self.nodes)
         for item in self.traverse(ident):
-            tree.nodes[item] = nodes[item]
+            tree.nodes[item] = copy.deepcopy(self.nodes[item])
         tree.nodes[ident].parent = None
         return tree
 
@@ -190,7 +192,7 @@ class Tree:
             del self.nodes[item]
 
     def graft(self, ident, tree):
-        stem = deepcopy(tree)
+        stem = copy.deepcopy(tree)
         shift = max(self.nodes.keys())
         stem.renumber(shift)
         for item in stem.nodes:

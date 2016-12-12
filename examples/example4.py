@@ -11,7 +11,7 @@ print(title)
 print('neuron:', morphology)
 
 m = Morpho(morphology)
-neurites = set([m.neurite(i) for i in m.traverse()])
+neurites = set(m.neurite(i) for i in m.traverse())
 
 for neurite in neurites:
     if neurite is 'soma': continue

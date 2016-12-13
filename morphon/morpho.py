@@ -155,11 +155,11 @@ class Morpho(Tree):
 	    A = self.coord(node.parent)
 	    B = self.coord(ident)
 	    C = self.coord(node.children[0])
-	    a = np.linalg.norm(C - B)
-	    b = np.linalg.norm(C - A)
-	    c = np.linalg.norm(B - A)
-	    s = (a + b + c) / 2
-	    radius_of_curvature = a*b*c / 4 / np.sqrt(s * (s - a) * (s - b) * (s - c))
+	    a = np.linalg.norm(C-B)
+	    b = np.linalg.norm(C-A)
+	    c = np.linalg.norm(B-A)
+	    s = (a+b+c)/2
+	    radius_of_curvature = a*b*c/4/np.sqrt(s*(s-a)*(s-b)*(s-c))
 	    scalar_curvature = 1 / radius_of_curvature
         return scalar_curvature
 
@@ -185,19 +185,6 @@ class Morpho(Tree):
     def size(self, ident=None, reverse=False, idents=[]):
         cmin, cmax = self.bounds(ident, reverse=reverse, idents=idents)
         return cmax-cmin
-
-    #def translate(self, ident, shift):
-    #    self.nodes[ident].value[1] += np.asarray(shift)
-
-    #def scale(self, ident, factor, coord=True, diam=False):
-    #    if coord:
-    #        self.nodes[ident].value[1] *= np.asarray(factor)
-    #    if diam:
-    #        self.nodes[ident].value[2] *= np.asarray(factor).mean()
-
-    #def rotate(self, ident, axis, angle):
-    #    c = self.coord(ident)
-    #    self.nodes[ident].value[1] = np.dot(_rotation_matrix(axis, angle), c)
 
     def translate(self, shift, ident=None):
         for item in self.traverse(ident):
@@ -249,11 +236,11 @@ class Morpho(Tree):
         selected = filter(lambda i: self.is_leaf(i), idents)
         return selected
 
-    def stems(self, ident=None, neurites=[]):
-        if ident:
-	    reverse = True
-        else:
-	    reverse = False
+    def stems(self, ident=None, reverse=False, neurites=[]):
+        #if ident:
+	#    reverse = True
+        #else:
+	#    reverse = False
         stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1])
         return [s[0] for s in stem_sections]
 

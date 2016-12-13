@@ -3,46 +3,23 @@ from morphon import Morpho
 import numpy as np
 import math
 
-def measure0(m):
-    morphometrics = {}
-    all_nodes = [i for i in m.traverse()]
-    all_branches = [b for b in m.branches()]
-    neurites = set(m.neurite(i) for i in all_nodes)
-    for neurite in neurites:
-        measures = {}
-        branches = filter(lambda b: m.neurite(b[0])==neurite, all_branches)
-        nodes = filter(lambda i: m.neurite(i)==neurite, all_nodes)
-        bifurcations = filter(lambda i: m.is_fork(i), nodes)
-        tips = filter(lambda i: m.is_leaf(i), nodes)
-        stems = filter(lambda b: m.order(b[0])==1, branches)
-        diams =[m.diam(i) for i in nodes]
-        area = sum(m.area(i) for i in nodes)
-        length = sum(m.length(i) for i in nodes)
-        volume = sum(m.volume(i) for i in nodes)
-        measures['area'] = area
-        measures['length'] = length
-        measures['volume'] = volume
-        measures['extent euclidean'] = [s for s in m.size(idents=nodes)]
-        measures['extent radial'] = max(m.distance(i, radial=True) for i in nodes)
-        measures['extent path'] = max(m.distance(i) for i in tips)
-        measures['diameters'] = np.mean(diams), np.std(diams), np.min(diams), np.max(diams)
-        measures['diameter effective'] = area/(math.pi*length)
-        measures['order'] = max(m.order(i) for i in tips)
-        measures['stems'] = len(stems)
-        measures['bifurcations'] = len(bifurcations)
-        measures['tips'] = len(tips)
-        measures['branches'] = len(branches)
-        morphometrics[neurite] = measures
-    return morphometrics
-
-def measure(m, features=[], idents=[]):
+def measure(m, features=[], idents=[], ident=None, reverse=False):
     metrics = {}
     tips = []
+    stems = []
     bifurcations = []
     area = None
     length = None
+    if 'number_of_stems' in features or not features:
+        if not idents:
+	    stems = m.stems(ident, reverse=reverse)
+        metrics['number_of_stems'] = len(stems)
+    if 'number_of_branches' in features or not features:
+        if not idents:
+	    branches = [b for b in m.branches(ident, reverse=reverse)]
+        metrics['number_of_branches'] = len(branches)
     if not idents:
-        idents = [i for i in m.traverse()]
+        idents = [i for i in m.traverse(ident, reverse=reverse)]
     if 'area' in features or not features:
         area = sum(m.area(i) for i in idents)
         metrics['area'] = area
@@ -51,6 +28,8 @@ def measure(m, features=[], idents=[]):
         metrics['length'] = length
     if 'volume' in features or not features:
         metrics['volume'] = sum(m.volume(i) for i in idents)
+    if 'center' in features or not features:
+        metrics['center'] = m.coord(m.root()).tolist()
     if 'euclidean_extent' in features or not features:
         metrics['euclidean_extent'] = [s for s in m.size(idents=idents)]
     if 'radial_extent' in features or not features:

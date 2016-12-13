@@ -13,11 +13,12 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
     if 'number_of_stems' in features or not features:
         if not idents:
 	    stems = m.stems(ident, reverse=reverse)
-        metrics['number_of_stems'] = len(stems)
+	    stems = filter(lambda i: m.neurite(i) != 'soma', stems)
+        metrics['number_of_stems'] = len(stems) if not idents else np.nan
     if 'number_of_branches' in features or not features:
         if not idents:
 	    branches = [b for b in m.branches(ident, reverse=reverse)]
-        metrics['number_of_branches'] = len(branches)
+        metrics['number_of_branches'] = len(branches) if not idents else np.nan
     if not idents:
         idents = [i for i in m.traverse(ident, reverse=reverse)]
     if 'area' in features or not features:
@@ -28,8 +29,13 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
         metrics['length'] = length
     if 'volume' in features or not features:
         metrics['volume'] = sum(m.volume(i) for i in idents)
-    if 'center' in features or not features:
-        metrics['center'] = m.coord(m.root()).tolist()
+    if 'root_position' in features or not features:
+        root = m.root()
+        metrics['root_position'] = m.coord(root).tolist() if root in idents else np.nan
+    if 'center_position' in features or not features:
+	positions = np.array([m.coord(i) for i in idents])
+	center = sum(positions) / len(positions)
+        metrics['center_position'] = center.tolist()
     if 'euclidean_extent' in features or not features:
         metrics['euclidean_extent'] = [s for s in m.size(idents=idents)]
     if 'radial_extent' in features or not features:

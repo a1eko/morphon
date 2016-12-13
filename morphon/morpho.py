@@ -205,19 +205,20 @@ class Morpho(Tree):
     def sections(self, ident=None, reverse=False, with_parent=False,
         neurites=[], orders=[], degrees=[]):
         selected = [b for b in self.branches(ident=ident, reverse=reverse)]
+        head = 0 if not with_parent else 1
         for section in selected:
             if with_parent:
                 parent = self.parent(section[0])
                 if parent is not None:
                     section.insert(0, parent)
-                else:
-                    section.insert(0, section[0]) # fake insert
+	        else:
+                    section.insert(0, section[0])
         if neurites:
-            selected= filter(lambda b: self.neurite(b[-1]) in neurites, selected)
+            selected= filter(lambda b: self.neurite(b[head]) in neurites, selected)
         if orders:
-            selected= filter(lambda b: self.order(b[-1]) in orders, selected)
+            selected= filter(lambda b: self.order(b[head]) in orders, selected)
         if degrees:
-            selected= filter(lambda b: self.degree(b[-1]) in degrees, selected)
+            selected= filter(lambda b: self.degree(b[head]) in degrees, selected)
         return selected
 
     def points(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
@@ -230,18 +231,14 @@ class Morpho(Tree):
             selected= filter(lambda i: self.degree(i) in degrees, selected)
         return selected
 
-    def tips(self, ident=None, neurites=[], orders=[], degrees=[]):
+    def tips(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
         idents = self.points(ident=ident, reverse=False,
             neurites=neurites, orders=orders, degrees=degrees)
         selected = filter(lambda i: self.is_leaf(i), idents)
         return selected
 
-    def stems(self, ident=None, reverse=False, neurites=[]):
-        #if ident:
-	#    reverse = True
-        #else:
-	#    reverse = False
-        stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1])
+    def stems(self, ident=None, reverse=False, neurites=[], degrees=[]):
+        stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1], degrees=degrees)
         return [s[0] for s in stem_sections]
 
     def bifurcations(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):

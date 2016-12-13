@@ -239,6 +239,7 @@ class Morpho(Tree):
 
     def stems(self, ident=None, reverse=False, neurites=[], degrees=[]):
         stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1], degrees=degrees)
+	stem_sections = filter(lambda s: self.neurite(s[0]) != 'soma', stem_sections)
         return [s[0] for s in stem_sections]
 
     def bifurcations(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):

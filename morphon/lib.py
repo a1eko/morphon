@@ -13,7 +13,7 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
     if 'number_of_stems' in features or not features:
         if not idents:
 	    stems = m.stems(ident, reverse=reverse)
-	    stems = filter(lambda i: m.neurite(i) != 'soma', stems)
+	    #stems = filter(lambda i: m.neurite(i) != 'soma', stems)
         metrics['number_of_stems'] = len(stems) if not idents else np.nan
     if 'number_of_branches' in features or not features:
         if not idents:
@@ -90,12 +90,12 @@ def _scholl_crossings(m, i, h):
     return kn-k0, k0
 
 
-def scholl(m, neurite, h=10):
-    nodes = filter(lambda i: m.neurite(i)==neurite, m.traverse())
-    rmax = max([m.distance(i, radial=True) for i in nodes])
+def scholl(m, h=10, neurites=[], orders=[], degrees=[]):
+    idents = m.points(neurites=neurites, orders=orders, degrees=degrees)
+    rmax = max(m.distance(i, radial=True) for i in idents)
     radx = np.array([k*h for k in range(int(rmax/h))])
     crox = np.zeros(int(rmax/h), dtype=int)
-    for i in nodes:
+    for i in idents:
         ncross, icross = _scholl_crossings(m, i, h)
         if ncross > 0:
             for k in range(ncross):

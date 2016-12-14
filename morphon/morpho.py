@@ -131,36 +131,39 @@ class Morpho(Tree):
         return dist
 
     def angle(self, ident):
-	theta = 0.0
-	node = self.nodes[ident]
-	if not self.is_root(ident):
+        theta = 0.0
+        node = self.nodes[ident]
+        if not self.is_root(ident):
             if self.is_bifurcation(ident):
-	        c0 = self.coord(node.children[0])
-	        c1 = self.coord(node.children[1])
-	        v0 = c0 - self.coord(ident)
-	        v1 = c1 - self.coord(ident)
-	        theta = _angle_between(v0, v1)
+                c0 = self.coord(node.children[0])
+                c1 = self.coord(node.children[1])
+                v0 = c0 - self.coord(ident)
+                v1 = c1 - self.coord(ident)
+                theta = _angle_between(v0, v1)
             elif not self.is_leaf(ident):
-	        c0 = self.coord(node.children[0])
-	        c1 = self.coord(node.parent)
-	        v0 = c0 - self.coord(ident)
-	        v1 = self.coord(ident) - c1
-	        theta = _angle_between(v0, v1)
+                c0 = self.coord(node.children[0])
+                c1 = self.coord(node.parent)
+                v0 = c0 - self.coord(ident)
+                v1 = self.coord(ident) - c1
+                theta = _angle_between(v0, v1)
         return theta
 
     def curvature(self, ident):
-	scalar_curvature = 0.0
+        scalar_curvature = 0.0
         if not self.is_root(ident) and not self.is_bifurcation(ident) and not self.is_leaf(ident):
-	    node = self.nodes[ident]
-	    A = self.coord(node.parent)
-	    B = self.coord(ident)
-	    C = self.coord(node.children[0])
-	    a = np.linalg.norm(C-B)
-	    b = np.linalg.norm(C-A)
-	    c = np.linalg.norm(B-A)
-	    s = (a+b+c)/2
-	    radius_of_curvature = a*b*c/4/np.sqrt(s*(s-a)*(s-b)*(s-c))
-	    scalar_curvature = 1 / radius_of_curvature
+            node = self.nodes[ident]
+            A = self.coord(node.parent)
+            B = self.coord(ident)
+            C = self.coord(node.children[0])
+            a = np.linalg.norm(C-B)
+            b = np.linalg.norm(C-A)
+            c = np.linalg.norm(B-A)
+            s = (a+b+c)/2
+	    q = np.sqrt(s*(s-a)*(s-b)*(s-c))
+	    #q = max(q, 1e-6)
+            radius_of_curvature = a*b*c/4/q
+            #radius_of_curvature = max(radius_of_curvature, 1e-6)
+            scalar_curvature = 1 / radius_of_curvature
         return scalar_curvature
 
     def bounds(self, ident=None, reverse=False, idents=[]):
@@ -211,7 +214,7 @@ class Morpho(Tree):
                 parent = self.parent(section[0])
                 if parent is not None:
                     section.insert(0, parent)
-	        else:
+                else:
                     section.insert(0, section[0])
         if neurites:
             selected= filter(lambda b: self.neurite(b[head]) in neurites, selected)
@@ -239,7 +242,7 @@ class Morpho(Tree):
 
     def stems(self, ident=None, reverse=False, neurites=[], degrees=[]):
         stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1], degrees=degrees)
-	stem_sections = filter(lambda s: self.neurite(s[0]) != 'soma', stem_sections)
+        stem_sections = filter(lambda s: self.neurite(s[0]) != 'soma', stem_sections)
         return [s[0] for s in stem_sections]
 
     def bifurcations(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):

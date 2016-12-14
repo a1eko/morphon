@@ -12,12 +12,11 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
     length = None
     if 'number_of_stems' in features or not features:
         if not idents:
-	    stems = m.stems(ident, reverse=reverse)
-	    #stems = filter(lambda i: m.neurite(i) != 'soma', stems)
+            stems = m.stems(ident, reverse=reverse)
         metrics['number_of_stems'] = len(stems) if not idents else np.nan
     if 'number_of_branches' in features or not features:
         if not idents:
-	    branches = [b for b in m.branches(ident, reverse=reverse)]
+            branches = [b for b in m.branches(ident, reverse=reverse)]
         metrics['number_of_branches'] = len(branches) if not idents else np.nan
     if not idents:
         idents = [i for i in m.traverse(ident, reverse=reverse)]
@@ -33,19 +32,19 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
         root = m.root()
         metrics['root_position'] = m.coord(root).tolist() if root in idents else np.nan
     if 'center_position' in features or not features:
-	positions = np.array([m.coord(i) for i in idents])
-	center = sum(positions) / len(positions)
+        positions = np.array([m.coord(i) for i in idents])
+        center = sum(positions) / len(positions)
         metrics['center_position'] = center.tolist()
     if 'euclidean_extent' in features or not features:
         metrics['euclidean_extent'] = [s for s in m.size(idents=idents)]
     if 'radial_extent' in features or not features:
         metrics['radial_extent'] = max(m.distance(i, radial=True) for i in idents)
     if 'path_extent' in features or not features:
-	tips = filter(lambda i: m.is_leaf(i), idents)
+        tips = filter(lambda i: m.is_leaf(i), idents)
         metrics['path_extent'] = max(m.distance(i) for i in tips)
     if 'local_diameter' in features or not features:
         diams =[m.diam(i) for i in idents]
-	metrics['local_diameter'] = np.mean(diams), np.std(diams), np.min(diams), np.max(diams)
+        metrics['local_diameter'] = np.mean(diams), np.std(diams), np.min(diams), np.max(diams)
     if 'effective_diameter' in features or not features:
         if not area:
             area = sum(m.area(i) for i in idents)
@@ -53,30 +52,31 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
             length = sum(m.length(i) for i in idents)
         metrics['effective_diameter'] = area/(math.pi*length)
     if 'order' in features or not features:
-	orders = [m.order(i) for i in idents]
+        orders = [m.order(i) for i in idents]
         min_order = min(orders)
         max_order = max(orders)
-	metrics['order'] = min_order, max_order
+        metrics['order'] = min_order, max_order
     if 'degree' in features or not features:
-	degrees = [m.degree(i) for i in idents]
+        degrees = [m.degree(i) for i in idents]
         min_degree = min(degrees)
         max_degree = max(degrees)
-	metrics['degree'] = min_degree, max_degree
+        metrics['degree'] = min_degree, max_degree
     if 'bifurcation_angle' in features or not features:
-	bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
-	if bifurcations:
+        bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
+        if bifurcations:
             angles = [m.angle(i) for i in bifurcations]
-	    metrics['bifurcation_angle'] = np.mean(angles), np.std(angles), np.min(angles), np.max(angles)
-    if 'curvature' in features or not features:
-	curvatures = [m.curvature(i) for i in idents]
-	metrics['curvature'] = np.mean(curvatures), np.std(curvatures), np.min(curvatures), np.max(curvatures)
+            metrics['bifurcation_angle'] = np.mean(angles), np.std(angles), np.min(angles), np.max(angles)
+    #FIXME curvature not tested
+    #if 'curvature' in features or not features:
+    #    curvatures = [m.curvature(i) for i in idents]
+    #    metrics['curvature'] = np.mean(curvatures), np.std(curvatures), np.min(curvatures), np.max(curvatures)
     if 'number_of_tips' in features or not features:
         if not tips:
-	    tips = filter(lambda i: m.is_leaf(i), idents)
+            tips = filter(lambda i: m.is_leaf(i), idents)
         metrics['number_of_tips'] = len(tips)
     if 'number_of_bifurcations' in features or not features:
         if not bifurcations:
-	    bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
+            bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
         metrics['number_of_bifurcations'] = len(bifurcations)
     return metrics
 

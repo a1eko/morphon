@@ -7,12 +7,12 @@ import numpy as np
 from tree import Tree
 
 
-def _rotation_matrix(axis, theta):
+def _rotation_matrix(axis, angle):
     axis = np.asarray(axis)
-    theta = np.asarray(theta)
+    angle = np.asarray(angle)
     axis = axis/math.sqrt(np.dot(axis, axis))
-    a = math.cos(theta/2)
-    b, c, d = -axis*math.sin(theta/2)
+    a = math.cos(angle/2)
+    b, c, d = -axis*math.sin(angle/2)
     aa, bb, cc, dd = a*a, b*b, c*c, d*d
     bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
     return np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
@@ -20,7 +20,8 @@ def _rotation_matrix(axis, theta):
                      [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
 
 def _unit_vector(vector):
-    return vector / np.linalg.norm(vector)
+    norm = np.linalg.norm(vector)
+    return vector / norm
 
 def _angle_between(v1, v2):
     v1_u = _unit_vector(v1)
@@ -32,6 +33,11 @@ def _angle_between(v1, v2):
         else:
             return np.pi
     return angle
+
+def rotation(v1, v2):
+    angle = _angle_between(v1, v2)
+    axis = _unit_vector(np.cross(v1, v2)) if angle != 0.0 and angle != np.pi else np.array(v1)*0
+    return axis, angle
 
 
 Neurite = {'soma': 1, 'axon': 2, 'dend': 3, 'apic': 4}
@@ -74,7 +80,7 @@ class Morpho(Tree):
                 p = p if p is not None else -1
                 r = d/2
                 data.append([ident, n, x, y, z, r, p])
-            np.savetxt(target, data, fmt='%d %d %.3g %.3g %.3g %.3g %d', header=header)
+            np.savetxt(target, data, fmt='%d %d %g %g %g %g %d', header=header)
         else:
             raise Error('unknown file format of ' + target)
 
@@ -103,9 +109,13 @@ class Morpho(Tree):
 
     def length(self, ident):
         parent = self.parent(ident)
-        c1 = self.coord(ident)
-        c0 = self.coord(parent) if parent is not None else c1
-        return np.linalg.norm(c0-c1)
+	if parent is not None:
+            c1 = self.coord(ident)
+            c0 = self.coord(parent)
+	    L = np.linalg.norm(c0-c1)
+	else:
+	    L = self.diam(ident)
+        return L
 
     def area(self, ident):
         parent = self.parent(ident)
@@ -159,11 +169,8 @@ class Morpho(Tree):
             b = np.linalg.norm(C-A)
             c = np.linalg.norm(B-A)
             s = (a+b+c)/2
-	    q = np.sqrt(s*(s-a)*(s-b)*(s-c))
-	    #q = max(q, 1e-6)
-            radius_of_curvature = a*b*c/4/q
-            #radius_of_curvature = max(radius_of_curvature, 1e-6)
-            scalar_curvature = 1 / radius_of_curvature
+            q = np.sqrt(abs(s*(s-a)*(s-b)*(s-c)))
+            scalar_curvature = 1 / (a*b*c/4/q) if abs(q) > 1e-9 else 0.0
         return scalar_curvature
 
     def bounds(self, ident=None, reverse=False, idents=[]):

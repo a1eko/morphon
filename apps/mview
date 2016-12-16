@@ -3,8 +3,8 @@
 "Neuron morphology viewer"
 
 from morphon import Morpho, measure, plot
-import json
 import argparse
+import json
 
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
@@ -40,7 +40,21 @@ def main():
 	    equal_scales=True)
     plt.show()
 
-    metrics = measure(m)
+    metrics = {}
+    metrics['total'] = measure(m)
+    for neurite in neurites:
+        idents = m.points(neurites=[neurite])
+	metrics[neurite] = measure(m, idents=idents)
+    for neurite in neurites:
+        metrics[neurite]['number_of_branches'] = 0
+        metrics[neurite]['number_of_stems'] = 0
+    stems = m.stems()
+    for stem in stems:
+        neurite = m.neurite(stem)
+	feature_value = measure(m, ident=stem, features=['number_of_branches'])
+        metrics[neurite]['number_of_branches'] += feature_value['number_of_branches']
+        metrics[neurite]['number_of_stems'] += 1
+    
     print json.dumps(metrics, indent=4, sort_keys=True)
 
 

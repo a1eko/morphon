@@ -3,6 +3,7 @@ from morphon import Morpho
 import numpy as np
 import math
 
+
 def measure(m, features=[], idents=[], ident=None, reverse=False):
     metrics = {}
     tips = []
@@ -41,10 +42,10 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
         metrics['radial_extent'] = max(m.distance(i, radial=True) for i in idents)
     if 'path_extent' in features or not features:
         tips = filter(lambda i: m.is_leaf(i), idents)
-        metrics['path_extent'] = max(m.distance(i) for i in tips)
+        metrics['path_extent'] = max(m.distance(i) for i in tips) if tips else np.nan
     if 'local_diameter' in features or not features:
         diams =[m.diam(i) for i in idents]
-        metrics['local_diameter'] = np.mean(diams), np.std(diams), np.min(diams), np.max(diams)
+        metrics['local_diameter'] = np.mean(diams), np.std(diams), np.median(diams), np.min(diams), np.max(diams)
     if 'effective_diameter' in features or not features:
         if not area:
             area = sum(m.area(i) for i in idents)
@@ -65,11 +66,10 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
         bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
         if bifurcations:
             angles = [m.angle(i) for i in bifurcations]
-            metrics['bifurcation_angle'] = np.mean(angles), np.std(angles), np.min(angles), np.max(angles)
-    #FIXME curvature not tested
-    #if 'curvature' in features or not features:
-    #    curvatures = [m.curvature(i) for i in idents]
-    #    metrics['curvature'] = np.mean(curvatures), np.std(curvatures), np.min(curvatures), np.max(curvatures)
+            metrics['bifurcation_angle'] = np.mean(angles), np.std(angles), np.median(angles), np.min(angles), np.max(angles)
+    if 'curvature' in features or not features:
+        curvatures = [m.curvature(i) for i in idents]
+        metrics['curvature'] = np.mean(curvatures), np.std(curvatures), np.median(curvatures), np.min(curvatures), np.max(curvatures)
     if 'number_of_tips' in features or not features:
         if not tips:
             tips = filter(lambda i: m.is_leaf(i), idents)

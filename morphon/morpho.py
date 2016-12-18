@@ -140,6 +140,9 @@ class Morpho(Tree):
             dist = sum(self.length(item) for item in self.traverse(ident, reverse=True))
         return dist
 
+    def depth(self, ident):
+        return sum(self.length(item) for item in self.traverse(ident))
+
     def angle(self, ident):
         theta = 0.0
         node = self.nodes[ident]

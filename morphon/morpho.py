@@ -131,17 +131,14 @@ class Morpho(Tree):
         r0 = self.diam(parent)/2 if parent is not None else 0
         return math.pi/3*(r0*r0 + r0*r1 + r1*r1)*h
 
-    def distance(self, ident, radial=False):
+    def distance(self, ident, radial=False, reverse=True):
         if radial:
             c0 = self.coord(self.root())
             c1 = self.coord(ident)
             dist = np.linalg.norm(c0-c1)
         else:
-            dist = sum(self.length(item) for item in self.traverse(ident, reverse=True))
+            dist = sum(self.length(item) for item in self.traverse(ident, reverse=reverse))
         return dist
-
-    def depth(self, ident):
-        return sum(self.length(item) for item in self.traverse(ident))
 
     def angle(self, ident):
         theta = 0.0

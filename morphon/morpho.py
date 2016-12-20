@@ -39,6 +39,11 @@ def rotation(v1, v2):
     axis = _unit_vector(np.cross(v1, v2)) if angle != 0.0 and angle != np.pi else np.array(v1)*0
     return axis, angle
 
+def elevation(v):
+    v2 = np.array([v[0], v[1], 0])
+    angle = _angle_between(v, v2)
+    return angle if v[2] > 0 else -angle
+
 
 Neurite = {'soma': 1, 'axon': 2, 'dend': 3, 'apic': 4}
 Neurites = {v: k for k, v in Neurite.items()}

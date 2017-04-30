@@ -178,6 +178,45 @@ class Morpho(Tree):
             scalar_curvature = 1 / (a*b*c/4/q) if abs(q) > 1e-9 else 0.0
         return scalar_curvature
 
+    def increment(self, ident, axis=2):
+        du = 0.0
+        if axis not in [0, 1, 2]:
+	    if type(axis) is str:
+	        axis = axis.lower()
+		axis = {'x': 0, 'y': 1, 'z': 2}[axis]
+	    else:
+                raise Error('incorrect axis ' + axis)
+        parent = self.parent(ident)
+	if parent is not None and not self.is_root(parent):
+            c1 = self.coord(ident)
+            c0 = self.coord(parent)
+	    du = c1[axis] - c0[axis]
+	return du
+
+    def rel_increment(self, ident, axis=2):
+	dl = 1.0
+	du = self.increment(ident, axis=axis)
+        parent = self.parent(ident)
+	if parent is not None:
+            dl = self.length(parent)
+	return du / dl
+
+    def is_jump(self, ident, axis=2, increment_thresh=5, rel_increment_thresh=3):
+        jump = False
+	if not self.is_leaf(ident):
+	    child = self.nodes[ident].children[0]
+	    if (self.increment(ident, axis=axis) > increment_thresh 
+	        and self.rel_increment(ident, axis=axis) > rel_increment_thresh
+		and self.rel_increment(child, axis=axis) < rel_increment_thresh):
+	            jump = True
+	return jump
+
+    def jumps(self, ident=None, axis=2, increment_thresh=5, rel_increment_thresh=3):
+        if ident is None:
+            ident = self.root()
+        idents = [item for item in self.traverse(ident) if self.is_jump(item, axis=axis)]
+	return idents
+
     def bounds(self, ident=None, reverse=False, idents=[]):
         if not idents:
             if ident is None:

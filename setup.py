@@ -9,6 +9,7 @@ setup(name='morphon',
       packages=['morphon'],
       scripts=[
           'apps/mview',
+          'apps/mfeatures',
       ],
       install_requires=[
           'numpy',

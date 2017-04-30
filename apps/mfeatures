@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+"Neuron morphology feature extraction"
+
+from __future__ import print_function
+from morphon import Morpho, measure
+import argparse
+import json
+
+
+def parse():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("file", type=str, help="input file (swc)", nargs='+')
+    parser.add_argument("-f", "--feature", type=str, help="morphological feature", action='append')
+    parser.add_argument("-i", "--inc", type=float, default=5.0, help="increment threshold for z-jumps detection")
+    parser.add_argument("-r", "--rel", type=float, default=3.0, help="relative increment threshold for z-jumps detection")
+    return parser.parse_args()
+
+
+def main():
+    args = parse()
+    files = {}
+
+    for morphology in args.file:
+        m = Morpho(morphology)
+        neurites = set(m.neurite(i) for i in m.traverse())
+
+        metrics = {}
+        metrics['total'] = measure(m, features=args.feature, 
+            increment_thresh=args.inc, rel_increment_thresh=args.rel)
+        for neurite in neurites:
+            idents = m.points(neurites=[neurite])
+            metrics[neurite] = measure(m, idents=idents, features=args.feature, 
+                increment_thresh=args.inc, rel_increment_thresh=args.rel)
+        if not args.feature:
+            for neurite in neurites:
+                metrics[neurite]['number_of_branches'] = 0
+                metrics[neurite]['number_of_stems'] = 0
+            stems = m.stems()
+            for stem in stems:
+                neurite = m.neurite(stem)
+                feature_value = measure(m, ident=stem, features=['number_of_branches'])
+                metrics[neurite]['number_of_branches'] += feature_value['number_of_branches']
+                metrics[neurite]['number_of_stems'] += 1
+	files[morphology] = metrics
+        
+    print(json.dumps(files, indent=4, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

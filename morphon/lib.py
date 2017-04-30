@@ -4,13 +4,15 @@ import numpy as np
 import math
 
 
-def measure(m, features=[], idents=[], ident=None, reverse=False):
+def measure(m, features=[], idents=[], ident=None, reverse=False, increment_thresh=5, rel_increment_thresh=3):
     metrics = {}
     tips = []
     stems = []
     bifurcations = []
     area = None
     length = None
+    if features is None:
+        features = []
     if 'number_of_stems' in features or not features:
         if not idents:
             stems = m.stems(ident, reverse=reverse)
@@ -78,6 +80,10 @@ def measure(m, features=[], idents=[], ident=None, reverse=False):
         if not bifurcations:
             bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
         metrics['number_of_bifurcations'] = len(bifurcations)
+    if 'z_jumps' in features or not features:
+        jumps = [i for i in idents if abs(m.increment(i)) > increment_thresh 
+            and abs(m.rel_increment(i)) > rel_increment_thresh]
+        metrics['z_jumps'] = len(jumps)
     return metrics
 
 
@@ -106,39 +112,52 @@ def sholl(m, h=10, neurites=[], orders=[], degrees=[]):
     return radx, crox
 
 
-def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], color='b', linewidth=1, equal_scales=False):
-    for section in m.sections(with_parent=True, neurites=neurites, orders=orders, degrees=degrees):
-        x, y, z = m.coords(section)
-        if linewidth == 'diam':
-            lw = (m.diam(section[-len(section)+1]) + m.diam(section[-1])) * 0.5
-        else:
-            lw = linewidth
+def _plot_projection(ax, bounds, x, y, z=None, projection='xy', color='b', linewidth=1, linestyle='-', marker=' ', equal_scales=False):
+    if equal_scales:
+        (xmin, ymin, zmin), (xmax, ymax, zmax) = bounds
+        sx, sy, sz = xmax-xmin, ymax-ymin, zmax-zmin
+        smax = max([sx, sy, sz])
+    if projection == 'xy':
         if equal_scales:
-            (xmin, ymin, zmin), (xmax, ymax, zmax) = m.bounds()
-            sx, sy, sz = xmax-xmin, ymax-ymin, zmax-zmin
-            smax = max([sx, sy, sz])
-        if projection == 'xy':
-            if equal_scales:
-                ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
-                ax.set_ylim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
-            ax.plot(x, y, color=color, linewidth=lw)
-        elif projection == 'yz':
-            if equal_scales:
-                ax.set_xlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
-                ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-            ax.plot(y, z, color=color, linewidth=lw)
-        elif projection == 'xz':
-            if equal_scales:
-                ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
-                ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-            ax.plot(x, z, color=color, linewidth=lw)
-        elif projection == '3d' or projection == 'xzy':
-            if equal_scales:
-                ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
-                ax.set_zlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
-                ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-            ax.plot(x, z, y, color=color, linewidth=lw)
-        elif projection == 'xyz':
-            ax.plot(x, y, z, color=color, linewidth=lw)
-        else:
-            raise Exception('unknown projection ' + projection)
+            ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
+            ax.set_ylim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
+        ax.plot(x, y, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
+    elif projection == 'yz':
+        if equal_scales:
+            ax.set_xlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
+            ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
+        ax.plot(y, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
+    elif projection == 'xz':
+        if equal_scales:
+            ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
+            ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
+        ax.plot(x, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
+    elif projection == '3d' or projection == 'xzy':
+        if equal_scales:
+            ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
+            ax.set_zlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
+            ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
+        ax.plot(x, z, y, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
+    elif projection == 'xyz':
+        ax.plot(x, y, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
+    else:
+        raise Exception('unknown projection ' + projection)
+
+
+def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], color='b', linewidth=1, linestyle='-', marker=' ', equal_scales=False):
+    if not idents:
+        for section in m.sections(with_parent=True, neurites=neurites, orders=orders, degrees=degrees):
+            x, y, z = m.coords(section)
+            if len(section) == 2:
+                d = m.diam(section[0])
+                x.extend([x[0], x[0]])
+                y.extend([y[0]-d/2, y[0]+d/2])
+                z.extend([z[0], z[0]])
+            if linewidth == 'diam':
+                lw = (m.diam(section[-len(section)+1]) + m.diam(section[-1])) * 0.5
+            else:
+                lw = linewidth
+            _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, color=color, linewidth=lw, linestyle=linestyle, marker=marker, equal_scales=equal_scales)
+    else:
+        x, y, z = m.coords(idents)
+        _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker, equal_scales=equal_scales)

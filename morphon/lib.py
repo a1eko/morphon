@@ -81,8 +81,9 @@ def measure(m, features=[], idents=[], ident=None, reverse=False, increment_thre
             bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
         metrics['number_of_bifurcations'] = len(bifurcations)
     if 'z_jumps' in features or not features:
-        jumps = [i for i in idents if abs(m.increment(i)) > increment_thresh 
-            and abs(m.rel_increment(i)) > rel_increment_thresh]
+        #jumps = [i for i in idents if abs(m.increment(i)) > increment_thresh 
+        #    and abs(m.rel_increment(i)) > rel_increment_thresh]
+        jumps = m.jumps(idents=idents, increment_thresh=increment_thresh, rel_increment_thresh=rel_increment_thresh)
         metrics['z_jumps'] = len(jumps)
     return metrics
 

@@ -205,17 +205,20 @@ class Morpho(Tree):
         jump = False
 	if not self.is_leaf(ident):
 	    child = self.nodes[ident].children[0]
-	    if (self.increment(ident, axis=axis) > increment_thresh 
-	        and self.rel_increment(ident, axis=axis) > rel_increment_thresh
-		and self.rel_increment(child, axis=axis) < rel_increment_thresh):
+	    if (abs(self.increment(ident, axis=axis)) > increment_thresh 
+	        and abs(self.rel_increment(ident, axis=axis)) > rel_increment_thresh
+		and abs(self.rel_increment(child, axis=axis)) < rel_increment_thresh):
 	            jump = True
 	return jump
 
-    def jumps(self, ident=None, axis=2, increment_thresh=5, rel_increment_thresh=3):
+    def jumps(self, ident=None, idents=[], axis=2, increment_thresh=5, rel_increment_thresh=3):
         if ident is None:
             ident = self.root()
-        idents = [item for item in self.traverse(ident) if self.is_jump(item, axis=axis)]
-	return idents
+        if not idents:
+            idents = self.traverse(ident)
+        items = [item for item in idents 
+	    if self.is_jump(item, axis=axis, increment_thresh=increment_thresh, rel_increment_thresh=rel_increment_thresh)]
+	return items
 
     def bounds(self, ident=None, reverse=False, idents=[]):
         if not idents:

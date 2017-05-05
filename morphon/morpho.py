@@ -114,12 +114,12 @@ class Morpho(Tree):
 
     def length(self, ident):
         parent = self.parent(ident)
-	if parent is not None:
+        if parent is not None:
             c1 = self.coord(ident)
             c0 = self.coord(parent)
-	    L = np.linalg.norm(c0-c1)
-	else:
-	    L = self.diam(ident)
+            L = np.linalg.norm(c0-c1)
+        else:
+            L = self.diam(ident)
         return L
 
     def area(self, ident):
@@ -181,44 +181,44 @@ class Morpho(Tree):
     def increment(self, ident, axis=2):
         du = 0.0
         if axis not in [0, 1, 2]:
-	    if type(axis) is str:
-	        axis = axis.lower()
-		axis = {'x': 0, 'y': 1, 'z': 2}[axis]
-	    else:
+            if type(axis) is str:
+                axis = axis.lower()
+                axis = {'x': 0, 'y': 1, 'z': 2}[axis]
+            else:
                 raise Error('incorrect axis ' + axis)
         parent = self.parent(ident)
-	if parent is not None and not self.is_root(parent):
+        if parent is not None and not self.is_root(parent):
             c1 = self.coord(ident)
             c0 = self.coord(parent)
-	    du = c1[axis] - c0[axis]
-	return du
+            du = c1[axis] - c0[axis]
+        return du
 
     def rel_increment(self, ident, axis=2):
-	dl = 1.0
-	du = self.increment(ident, axis=axis)
+        dl = 1.0
+        du = self.increment(ident, axis=axis)
         parent = self.parent(ident)
-	if parent is not None:
+        if parent is not None:
             dl = self.length(parent)
-	return du / dl
+        return du / dl
 
     def is_jump(self, ident, axis=2, increment_thresh=5, rel_increment_thresh=3):
         jump = False
-	if not self.is_leaf(ident):
-	    child = self.nodes[ident].children[0]
-	    if (abs(self.increment(ident, axis=axis)) > increment_thresh 
-	        and abs(self.rel_increment(ident, axis=axis)) > rel_increment_thresh
-		and abs(self.rel_increment(child, axis=axis)) < rel_increment_thresh):
-	            jump = True
-	return jump
+        if not self.is_leaf(ident):
+            child = self.nodes[ident].children[0]
+            if (abs(self.increment(ident, axis=axis)) > increment_thresh
+                and abs(self.rel_increment(ident, axis=axis)) > rel_increment_thresh
+                and abs(self.rel_increment(child, axis=axis)) < rel_increment_thresh):
+                jump = True
+        return jump
 
     def jumps(self, ident=None, idents=[], axis=2, increment_thresh=5, rel_increment_thresh=3):
         if ident is None:
             ident = self.root()
         if not idents:
             idents = self.traverse(ident)
-        items = [item for item in idents 
-	    if self.is_jump(item, axis=axis, increment_thresh=increment_thresh, rel_increment_thresh=rel_increment_thresh)]
-	return items
+        items = [item for item in idents
+            if self.is_jump(item, axis=axis, increment_thresh=increment_thresh, rel_increment_thresh=rel_increment_thresh)]
+        return items
 
     def bounds(self, ident=None, reverse=False, idents=[]):
         if not idents:

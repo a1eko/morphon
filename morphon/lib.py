@@ -81,8 +81,6 @@ def measure(m, features=[], idents=[], ident=None, reverse=False, increment_thre
             bifurcations = filter(lambda i: m.is_bifurcation(i), idents)
         metrics['number_of_bifurcations'] = len(bifurcations)
     if 'z_jumps' in features or not features:
-        #jumps = [i for i in idents if abs(m.increment(i)) > increment_thresh 
-        #    and abs(m.rel_increment(i)) > rel_increment_thresh]
         jumps = m.jumps(idents=idents, increment_thresh=increment_thresh, rel_increment_thresh=rel_increment_thresh)
         metrics['z_jumps'] = len(jumps)
     return metrics
@@ -162,3 +160,28 @@ def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], 
     else:
         x, y, z = m.coords(idents)
         _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker, equal_scales=equal_scales)
+
+
+def correct_jumps(m, jumps, axis=2):
+    if axis not in [0, 1, 2]:
+        if type(axis) is str:
+            axis = axis.lower()
+            axis = {'x': 0, 'y': 1, 'z': 2}[axis]
+        else:
+            raise Error('incorrect axis ' + axis)
+    for ident in jumps:
+        parent = m.parent(ident)
+        c1 = m.coord(ident)
+        c0 = m.coord(parent)
+        shift = c0[axis]-c1[axis]
+        corr = [0, 0, 0]
+        corr[axis] = shift
+        m.translate(corr, ident=ident)
+
+
+def tortuosity(m, branch):
+    c0 = m.coord(branch[0])
+    c1 = m.coord(branch[-1])
+    dist = np.linalg.norm(c1-c0)
+    leng = sum(m.length(ident) for ident in branch)
+    return dist / leng

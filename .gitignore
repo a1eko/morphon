@@ -90,3 +90,5 @@ ENV/
 
 # morphon work files
 work/
+.bak
+*~

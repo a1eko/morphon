@@ -111,7 +111,7 @@ def sholl(m, h=10, neurites=[], orders=[], degrees=[]):
     return radx, crox
 
 
-def _plot_projection(ax, bounds, x, y, z=None, projection='xy', equal_scales=False, **kwargs):
+def _plot_projection(ax, bounds, x, y, z=None, projection='xy', color='b', linewidth=1, linestyle='-', marker=' ', equal_scales=False):
     if equal_scales:
         (xmin, ymin, zmin), (xmax, ymax, zmax) = bounds
         sx, sy, sz = xmax-xmin, ymax-ymin, zmax-zmin
@@ -120,37 +120,46 @@ def _plot_projection(ax, bounds, x, y, z=None, projection='xy', equal_scales=Fal
         if equal_scales:
             ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
             ax.set_ylim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
-        ax.plot(x, y, **kwargs)
+        ax.plot(x, y, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
     elif projection == 'yz':
         if equal_scales:
             ax.set_xlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
             ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-        ax.plot(y, z, **kwargs)
+        ax.plot(y, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
     elif projection == 'xz':
         if equal_scales:
             ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
             ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-        ax.plot(x, z, **kwargs)
+        ax.plot(x, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
     elif projection == '3d' or projection == 'xzy':
         if equal_scales:
             ax.set_xlim(((xmin+xmax-smax)/2, (xmin+xmax+smax)/2))
             ax.set_zlim(((ymin+ymax-smax)/2, (ymin+ymax+smax)/2))
             ax.set_ylim(((zmin+zmax-smax)/2, (zmin+zmax+smax)/2))
-        ax.plot(x, z, y, **kwargs)
+        ax.plot(x, z, y, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
     elif projection == 'xyz':
-        ax.plot(x, y, z, **kwargs)
+        ax.plot(x, y, z, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker)
     else:
         raise Exception('unknown projection ' + projection)
 
 
-def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], equal_scales=False, **kwargs):
+def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], color='b', linewidth=1, linestyle='-', marker=' ', equal_scales=False):
     if not idents:
         for section in m.sections(with_parent=True, neurites=neurites, orders=orders, degrees=degrees):
             x, y, z = m.coords(section)
-            _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, equal_scales=equal_scales, **kwargs)
+            if len(section) == 2:
+                d = m.diam(section[0])
+                x.extend([x[0], x[0]])
+                y.extend([y[0]-d/2, y[0]+d/2])
+                z.extend([z[0], z[0]])
+            if linewidth == 'diam':
+                lw = (m.diam(section[-len(section)+1]) + m.diam(section[-1])) * 0.5
+            else:
+                lw = linewidth
+            _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, color=color, linewidth=lw, linestyle=linestyle, marker=marker, equal_scales=equal_scales)
     else:
         x, y, z = m.coords(idents)
-        _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, equal_scales=equal_scales, **kwargs)
+        _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, color=color, linewidth=linewidth, linestyle=linestyle, marker=marker, equal_scales=equal_scales)
 
 
 def correct_jumps(m, jumps, axis=2):
@@ -192,14 +201,14 @@ def stretch(m, section, scaling, preserve_length=True, preserve_bifurcation_angl
             v = m.coord(ident) - m.coord(parent)
             vnorm = np.linalg.norm(v)
             vnew = v + direction*vnorm
-            if preserve_length:
+	    if preserve_length:
                 vnew /= np.linalg.norm(vnew)
                 vnew *= vnorm
             shift = vnew - v
             m.translate(shift, ident=ident)
         ident = section[-1]
         if m.is_bifurcation(ident):
-            c0 = m.coord(ident)
+    	    c0 = m.coord(ident)
             for child in m.nodes[ident].children:
                 c1 = m.coord(child)
                 m.translate(c0-c1, ident=child)

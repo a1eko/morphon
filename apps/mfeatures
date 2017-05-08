@@ -3,7 +3,8 @@
 "Neuron morphology feature extraction"
 
 from __future__ import print_function
-from morphon import Morpho, measure
+from morphon import Morpho, measure, tortuosity
+import numpy as np
 import argparse
 import json
 
@@ -42,6 +43,11 @@ def main():
                 feature_value = measure(m, ident=stem, features=['number_of_branches'])
                 metrics[neurite]['number_of_branches'] += feature_value['number_of_branches']
                 metrics[neurite]['number_of_stems'] += 1
+	    torts = [tortuosity(m, sec) for sec in m.sections()]
+	    metrics['total']['tortuosity'] = np.mean(torts), np.std(torts), np.median(torts), np.min(torts), np.max(torts)
+            for neurite in neurites:
+	        torts = [tortuosity(m, sec) for sec in m.sections(neurites=[neurite])]
+	        metrics[neurite]['tortuosity'] = np.mean(torts), np.std(torts), np.median(torts), np.min(torts), np.max(torts)
 	files[morphology] = metrics
         
     print(json.dumps(files, indent=4, sort_keys=True))

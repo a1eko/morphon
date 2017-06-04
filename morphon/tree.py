@@ -178,18 +178,30 @@ class Tree:
             for item in items:
                 del self.nodes[item]
 
-    def renumber(self, shift):
-        for item in self.nodes:
-            node = self.nodes[item]
-            node.ident += shift
-            if node.parent is not None:
-                node.parent += shift
-            for child in node.children[:]:
-                node.children.append(child + shift)
-                node.children.remove(child)
-        for item in self.nodes.keys():
-            self.nodes[item+shift] = self.nodes[item]
-            del self.nodes[item]
+    def renumber(self, shift=0, continuous=False):
+	if shift:
+            for item in self.nodes:
+                node = self.nodes[item]
+                node.ident += shift
+                if node.parent is not None:
+                    node.parent += shift
+                for child in node.children[:]:
+                    node.children.append(child + shift)
+                    node.children.remove(child)
+            for item in self.nodes.keys():
+                self.nodes[item+shift] = self.nodes[item]
+                del self.nodes[item]
+        elif continuous:
+            idents = dict()
+	    for ident, item in enumerate(self.traverse(), start=1):
+	        idents[item] = ident
+            tree = Tree()
+	    for ident, item in enumerate(self.traverse(), start=1):
+                tree.nodes[ident] = copy.deepcopy(self.nodes[item])
+                tree.nodes[ident].parent = idents[self.nodes[item].parent] if self.nodes[item].parent is not None else None
+		for c, child in enumerate(self.nodes[item].children):
+                    tree.nodes[ident].children[c] = idents[child]
+            self.nodes = tree.nodes
 
     def graft(self, ident, tree):
         stem = copy.deepcopy(tree)

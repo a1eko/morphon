@@ -1,4 +1,5 @@
 from __future__ import division
+from matplotlib.mlab import PCA
 from morphon import Morpho
 import numpy as np
 import math
@@ -23,6 +24,14 @@ def measure(m, features=[], idents=[], ident=None, reverse=False, increment_thre
         metrics['number_of_branches'] = len(branches) if not idents else np.nan
     if not idents:
         idents = [i for i in m.traverse(ident, reverse=reverse)]
+    if 'pca_fracs' in features or not features:
+        data = np.array([m.coord(i) for i in idents])
+	results = None
+	try:
+            results = PCA(data)
+	except:
+	    pass
+	metrics['pca_fracs'] = results.fracs.tolist() if results else {'pca_fracs': [np.nan, np.nan, np.nan]}
     if 'area' in features or not features:
         area = sum(m.area(i) for i in idents)
         metrics['area'] = area

@@ -17,6 +17,8 @@ def parse():
     parser.add_argument("-s", "--scale_bar", type=float, default=0.0, help="show scale bar (in microns)")
     parser.add_argument("-t", "--title", type=str, help="set figure title")
     parser.add_argument("-o", "--output", type=str, help="save image to file")
+    parser.add_argument("-c", "--colors", type=str, help="line colors, comma separated")
+    parser.add_argument("-n", "--neurites", type=str, help="neurite type names, comma separated")
     return parser.parse_args()
 
 
@@ -35,8 +37,10 @@ def main():
     ax.set_zlabel('y')
     if args.axis_off:
         ax.set_axis_off()
+    if args.colors:
+       cell_colors = args.colors.split(',') 
     colors = {'soma': 'black', 'dend': 'blue', 'apic': 'green', 'axon': 'grey'}
-    thickness = {'soma': 5, 'dend': 1, 'apic': 1, 'axon': 0.5}
+    thickness = {'soma': 1, 'dend': 1, 'apic': 1, 'axon': 0.5}
     linestyles = {'soma': ' ', 'dend': '-', 'apic': '-', 'axon': '-'}
     markers = {'soma': 'o', 'dend': '', 'apic': '', 'axon': ''}
     for morphology in args.file:
@@ -44,8 +48,14 @@ def main():
         if abs(args.scale_bar) > 0.0:
             (x1, y1, z1), (x2, y2, z2) = m.bounds()
 	    ax.plot([x2, x2], [z2, z2], [y2, y2-args.scale_bar], color='k', linewidth=3)
-        neurites = set(m.neurite(i) for i in m.traverse())
-        for neurite in neurites:
+        neurites = args.neurites.split(',') if args.neurites else set(m.neurite(i) for i in m.traverse())
+	if args.colors:
+	    if cell_colors:
+	        c = cell_colors[0]
+		cell_colors.remove(c)
+	    for neurite in neurites:
+	        colors[neurite] = c
+        for neurite in sorted(neurites):
             plot(m, ax, projection='3d', equal_scales=equal_scales,
                 neurites=[neurite],
                 color=colors[neurite],

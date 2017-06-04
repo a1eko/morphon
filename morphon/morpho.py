@@ -10,7 +10,7 @@ from tree import Tree
 def _rotation_matrix(axis, angle):
     axis = np.asarray(axis)
     angle = np.asarray(angle)
-    axis = axis/math.sqrt(np.dot(axis, axis))
+    axis = axis/math.sqrt(np.dot(axis, axis)) if np.dot(axis, axis) > 1e-6 else axis # FIXME
     a = math.cos(angle/2)
     b, c, d = -axis*math.sin(angle/2)
     aa, bb, cc, dd = a*a, b*b, c*c, d*d
@@ -21,7 +21,7 @@ def _rotation_matrix(axis, angle):
 
 def _unit_vector(vector):
     norm = np.linalg.norm(vector)
-    return vector / norm
+    return vector / norm if norm > 1e-6 else vector # FIXME
 
 def _angle_between(v1, v2):
     v1_u = _unit_vector(v1)
@@ -45,8 +45,9 @@ def elevation(v):
     return angle if v[2] > 0 else -angle
 
 
-Neurite = {'soma': 1, 'axon': 2, 'dend': 3, 'apic': 4}
+Neurite = {'soma': 1, 'axon': 2, 'dend': 3, 'apic': 4, None: -1}
 Neurites = {v: k for k, v in Neurite.items()}
+Neurites[None] = None
 
 
 class Error(StandardError):
@@ -95,7 +96,9 @@ class Morpho(Tree):
 
 
     def neurite(self, ident):
-        n, xyz, d = self.value(ident)
+	n = None
+	if ident is not None:
+            n, xyz, d = self.value(ident)
         return Neurites[n]
 
     def coord(self, ident):
@@ -199,7 +202,7 @@ class Morpho(Tree):
         parent = self.parent(ident)
         if parent is not None:
             dl = self.length(parent)
-        return du / dl
+        return du / dl if abs(dl) > 1e-6 else du
 
     def is_jump(self, ident, axis=2, increment_thresh=5, rel_increment_thresh=3):
         jump = False
@@ -294,10 +297,15 @@ class Morpho(Tree):
         selected = filter(lambda i: self.is_leaf(i), idents)
         return selected
 
-    def stems(self, ident=None, reverse=False, neurites=[], degrees=[]):
-        stem_sections = self.sections(ident=ident, reverse=reverse, neurites=neurites, orders=[1], degrees=degrees)
-        stem_sections = filter(lambda s: self.neurite(s[0]) != 'soma', stem_sections)
-        return [s[0] for s in stem_sections]
+    def stems(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
+	points = self.points(ident=ident, reverse=reverse, neurites=neurites, orders=orders, degrees=degrees)
+	soma = self.points(neurites=['soma'])
+	idents = []
+	for item in soma:
+	    for child in self.nodes[item].children:
+	        if child in points:
+		    idents.append(child)
+        return idents
 
     def bifurcations(self, ident=None, reverse=False, neurites=[], orders=[], degrees=[]):
         idents = self.points(ident=ident, reverse=reverse,

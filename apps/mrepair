@@ -105,6 +105,7 @@ def repair_neurite(m, repair_candidate, inner_tips, order_thresh=0, length_thres
     subtree.rotate(axis, angle)
     c0 = subtree.coord(subtree.root())
     c1 = m.coord(repair_candidate)
+    c1 += c1 - m.coord(m.parent(repair_candidate))
     subtree.translate(c1-c0)
     m.graft(repair_candidate, subtree)
 

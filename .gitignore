@@ -89,6 +89,7 @@ ENV/
 .ropeproject
 
 # morphon work files
+TODO
 work/
 .bak
 *~

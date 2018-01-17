@@ -149,6 +149,8 @@ class Tree:
         if parent is not None:
             self.nodes[parent].del_child(ident)
             self.nodes[parent].add_child(inset)
+	self.nodes[ident].parent = inset
+        return inset
 
     def remove(self, ident):
         parent = self.nodes[ident].parent
@@ -203,9 +205,10 @@ class Tree:
                     tree.nodes[ident].children[c] = idents[child]
             self.nodes = tree.nodes
 
-    def graft(self, ident, tree):
+    def graft(self, ident, tree, shift=0):
         stem = copy.deepcopy(tree)
-        shift = max(self.nodes.keys())
+        if not shift:
+            shift = max(self.nodes.keys())
         stem.renumber(shift)
         for item in stem.nodes:
             self.nodes[item] = stem.nodes[item]

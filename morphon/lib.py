@@ -31,7 +31,7 @@ def measure(m, features=[], idents=[], ident=None, reverse=False, increment_thre
             results = PCA(data)
 	except:
 	    pass
-	metrics['pca_fracs'] = results.fracs.tolist() if results else {'pca_fracs': [np.nan, np.nan, np.nan]}
+	metrics['pca_fracs'] = results.fracs.tolist() if results else [np.nan, np.nan, np.nan]
     if 'area' in features or not features:
         area = sum(m.area(i) for i in idents)
         metrics['area'] = area
@@ -115,7 +115,8 @@ def sholl(m, h=10, neurites=[], orders=[], degrees=[]):
             for k in range(ncross):
                 crox[icross+k] += 1
         elif ncross < 0:
-            for k in range(-ncross):
+            #for k in range(-ncross-1):
+            for k in range(1,-ncross):
                 crox[icross-k] += 1
     return radx, crox
 
@@ -151,12 +152,22 @@ def _plot_projection(ax, bounds, x, y, z=None, projection='xy', equal_scales=Fal
     else:
         raise Exception('unknown projection ' + projection)
 
+def _draw_sphere(ax, origin, radius):
+    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+    x = origin[0] + np.cos(u)*np.sin(v)*radius
+    y = origin[1] + np.sin(u)*np.sin(v)*radius
+    z = origin[2] + np.cos(v)*radius
+    ax.plot_wireframe(x, y, z, color='black', linewidth=0.2, rcount=4, ccount=4)
 
 def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], equal_scales=False, **kwargs):
     if not idents:
         for section in m.sections(with_parent=True, neurites=neurites, orders=orders, degrees=degrees):
             x, y, z = m.coords(section)
             _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, equal_scales=equal_scales, **kwargs)
+	    if (projection is '3d' or projection is 'xyz') and m.neurite(section[0]) is 'soma':
+		(x0,y0,z0) = m.coord(section[0])
+		radius = m.diam(section[0])/2.0
+                _draw_sphere(ax, (x0,z0,y0), radius)
     else:
         x, y, z = m.coords(idents)
         _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, equal_scales=equal_scales, **kwargs)
@@ -187,28 +198,22 @@ def tortuosity(m, section):
     return dist / leng if abs(leng) > 1e-6 else 1.0
 
 
-def stretch(m, section, scaling, preserve_length=True, preserve_bifurcation_angle=True):
-    start = 2 if preserve_bifurcation_angle else 1
-    if len(section) > start:
-        positions = np.array([m.coord(ident) for ident in section])
-        center = sum(positions) / len(positions)
+def stretch(m, section, scaling, preserve_length=True):
+    if len(section) > 1:
+        coords = np.array([m.coord(ident) for ident in section])
+        center = sum(coords) / len(coords)
         origin = m.coord(section[0])
         direction = center - origin
         direction /= np.linalg.norm(direction)
         direction *= abs(scaling)
-        for ident in section[start:]:
+        for ident in section[1:]:
             parent = m.parent(ident)
             v = m.coord(ident) - m.coord(parent)
             vnorm = np.linalg.norm(v)
             vnew = v + direction*vnorm
             if preserve_length:
-                vnew /= np.linalg.norm(vnew)
+                vleng = np.linalg.norm(vnew)
+		if vleng > 1e-6:
+                    vnew /= vleng
                 vnew *= vnorm
-            shift = vnew - v
-            m.translate(shift, ident=ident)
-        ident = section[-1]
-        if m.is_bifurcation(ident):
-            c0 = m.coord(ident)
-            for child in m.nodes[ident].children:
-                c1 = m.coord(child)
-                m.translate(c0-c1, ident=child)
+            m.translate(vnew-v, ident=ident)

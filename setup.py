@@ -10,6 +10,7 @@ setup(name='morphon',
       scripts=[
           'apps/mview',
           'apps/mfeatures',
+          'apps/mrepair',
       ],
       install_requires=[
           'numpy',

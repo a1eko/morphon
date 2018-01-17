@@ -94,6 +94,8 @@ class Morpho(Tree):
         ident = max(self.nodes.keys())+1 if self.nodes else None
         return Tree.add(self, ident=ident, value=[Neurite[neurite], np.array(coord), diam], parent=parent)
 
+    def insert(self, ident, neurite, coord, diam):
+        return Tree.insert(self, ident, value=[Neurite[neurite], np.array(coord), diam])
 
     def neurite(self, ident):
 	n = None

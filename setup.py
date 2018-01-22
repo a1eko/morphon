@@ -11,6 +11,7 @@ setup(name='morphon',
           'apps/mview',
           'apps/mfeatures',
           'apps/mrepair',
+          'apps/mreg',
       ],
       install_requires=[
           'numpy',

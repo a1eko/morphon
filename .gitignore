@@ -3,6 +3,7 @@ x86_64
 *.swp
 *.bak
 *~
+.ipynb_checkpoints
 /morphon.egg-info/
 /build/
 /dist/

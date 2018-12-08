@@ -5,6 +5,7 @@ x86_64
 *~
 .ipynb_checkpoints
 /morphon.egg-info/
+examples
 /build/
 /dist/
 TODO

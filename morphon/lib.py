@@ -167,7 +167,7 @@ def plot(m, ax, projection='xy', neurites=[], orders=[], degrees=[], idents=[], 
 	    if (projection is '3d' or projection is 'xyz') and m.neurite(section[0]) is 'soma':
 		(x0,y0,z0) = m.coord(section[0])
 		radius = m.diam(section[0])/2.0
-                _draw_sphere(ax, (x0,z0,y0), radius)
+                #_draw_sphere(ax, (x0,z0,y0), radius)
     else:
         x, y, z = m.coords(idents)
         _plot_projection(ax, m.bounds(), x, y, z=z, projection=projection, equal_scales=equal_scales, **kwargs)

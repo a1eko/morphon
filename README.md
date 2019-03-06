@@ -1,2 +1,2 @@
-# morphon2
+# morphon
 Neuron morphology processing tools.

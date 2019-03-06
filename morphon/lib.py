@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import
 from builtins import sum, list, max, filter, dict, abs
-from morphon2 import Node, rotation
+from morphon import Node, rotation
 from .morph import _angle_between
 import numpy as np
 import math

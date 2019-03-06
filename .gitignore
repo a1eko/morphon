@@ -4,7 +4,8 @@ x86_64
 *.bak
 *~
 .ipynb_checkpoints
-/morphon.egg-info/
+/morphon2.egg-info/
 /build/
 /dist/
+work
 TODO

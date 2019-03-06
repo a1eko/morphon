@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 from builtins import all, list, set, filter, str
-from morphon2 import Morph, Point
+from morphon import Morph, Point
 import argparse
 import json
 import sys

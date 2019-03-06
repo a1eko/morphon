@@ -4,13 +4,6 @@ x86_64
 *.bak
 *~
 .ipynb_checkpoints
-<<<<<<< HEAD
-/morphon2.egg-info/
-=======
-/morphon.egg-info/
-examples
-work
->>>>>>> 453799d8a672a14896baf340072c008df7a425b3
 /build/
 /dist/
 work

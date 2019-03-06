@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 from builtins import max, list, sum, str
-from morphon2 import Morph, resample, select, stretch, rotation
+from morphon import Morph, resample, select, stretch, rotation
 import numpy as np
 import argparse
 import sys

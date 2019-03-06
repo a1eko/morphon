@@ -4,7 +4,7 @@
 
 from __future__ import print_function, division
 from builtins import filter, list, set, str, eval, min, abs
-from morphon2 import Morph, select
+from morphon import Morph, select
 import numpy as np
 import argparse
 

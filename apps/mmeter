@@ -5,7 +5,7 @@
 from __future__ import print_function, division
 from builtins import dict, list, sum, max, str
 from collections import OrderedDict
-from morphon2 import Morph, meter, std_features
+from morphon import Morph, meter, std_features
 import numpy as np
 import argparse
 import json

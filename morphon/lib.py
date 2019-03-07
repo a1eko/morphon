@@ -192,7 +192,7 @@ def _angle(m, ident):
 
 
 std_features = ['angle', 'area', 'asym', 'degree', 'depth', 'diam', 'dist',
-    'height', 'length', 'nbifs', 'npoints', 'nsecs', 'ntips', 'order', 'part', 
+    'height', 'length', 'nbifs', 'npoints', 'nsecs', 'ntips', 'order', 'part',
     'path', 'seclen', 'tort', 'volume', 'width']
 
 
@@ -380,3 +380,27 @@ def meter(m, ident=None, features=[]):
     if 'diam' in features:
         mm['diam'] = diam
     return mm
+
+
+def _sholl_crossings(m, i, h):
+    p = m.parent(i)
+    r1 = m.distance(p, radial=True)
+    r2 = m.distance(i, radial=True)
+    k1 = int(r1/h)
+    k2 = int(r2/h)
+    return k2-k1, k1
+
+
+def sholl(m, idents, step=10):
+    rmax = max(m.distance(i, radial=True) for i in idents)
+    radx = np.array([k*step for k in range(int(rmax/step))])
+    crox = np.zeros(int(rmax/step), dtype=int)
+    for ident in idents:
+        ncross, icross = _sholl_crossings(m, ident, step)
+        if ncross > 0:
+            for k in range(ncross):
+                crox[icross+k] += 1
+        elif ncross < 0:
+            for k in range(1,-ncross):
+                crox[icross-k] += 1
+    return radx, crox

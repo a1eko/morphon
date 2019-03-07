@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+"Sholl analysis of morphology reconstruction"
+
+from __future__ import print_function, division
+from builtins import list
+from morphon import Morph, select, sholl
+import numpy as np
+import argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('file', type=str, help='input morphology file (swc)')
+    parser.add_argument('-p', dest='type', type=str, default='2,3,4',
+        help='list of point types (csv) [2,3,4]')
+    parser.add_argument('-e', dest='order', type=str, help='list of branch orders (csv)')
+    parser.add_argument('-d', dest='degree', type=str, help='list of branch degrees (csv)')
+    parser.add_argument('-s', dest='step', type=float, default=10.0, help='Sholl radii stepsize (float)')
+    parser.add_argument('-o', dest='out', type=str, default='sholl.dat',
+        help='output file name (txt) [sholl.dat]')
+    return parser.parse_args()
+
+
+def main(args):
+    m = Morph()
+    m.load(args.file)
+    types = set(int(item) for item in args.type.replace(',', ' ').split(' '))
+    if args.order:
+        orders = set(int(item) for item in args.order.replace(',', ' ').split(' '))
+    else:
+        orders = []
+    if args.degree:
+        degrees = set(int(item) for item in args.degree.replace(',', ' ').split(' '))
+    else:
+        degrees = []
+    idents = list()
+    for sec in select(m, m.sections(), types=types, orders=orders, degrees=degrees):
+        idents.extend(sec)
+    radx, crox = sholl(m, idents, step=args.step)
+    s = np.array(list((x,y) for (x,y) in zip(radx,crox)))
+    np.savetxt(args.out, s, fmt='%g')
+
+
+if __name__ == '__main__':
+    main(parse_args())

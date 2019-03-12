@@ -6,10 +6,10 @@ Neuron morphology processing scripts:
 
 - ``mcheck``  test morphology reconstruction for structural consistency
 - ``mfind``   find singularities in morphological reconstruction
-- ``mmeter``  morphometric analysis
-- ``mmod``    morphology modification
+- ``mmeter``  perform morphometric analysis
+- ``mmod``    modify morphology
 - ``mrep``    repair or correct neuron morphology
-- ``msholl``  Sholl analysis of morphology reconstruction
+- ``msholl``  Sholl analysis of morphological reconstruction
 - ``mshow``   view neuron morphology
 
 See command line help and usage messages for details.
@@ -18,10 +18,10 @@ See command line help and usage messages for details.
 Installation
 ~~~~~~~~~~~~
 
-Install using `pip`:
+Install using ``pip``:
 
 .. code-block:: python
 
    pip install morphon
 
-See `pip` documentation for installation alternatives.
+See ``pip`` documentation for installation alternatives.

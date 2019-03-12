@@ -2,8 +2,8 @@ import setuptools
 
 setuptools.setup(name="morphon",
     version="0.0.2",
-    description="Neuron morphology processing tools",
-    long_description="Neuron morphology processing tools",
+    description="Neuron morphology processing scripts",
+    long_description="Neuron morphology processing scripts",
     author="Alexander Kozlov",
     author_email="akozlov@kth.se",
     url="https://github.com/a1eko/morphon",

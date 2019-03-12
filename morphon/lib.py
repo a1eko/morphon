@@ -123,6 +123,9 @@ def repair_cut(m, ident, src, flip_z=False):
         n.translate(-c0)
         n.rotate(v0, math.pi)
         n.translate(c0)
+    r0 = m.radius(src)
+    r1 = m.radius(ident)
+    n.scale(r1/r0, diam=True)
     c0 = m.coord(list(m.section(ident, reverse=True))[-1])
     c1 = m.coord(ident)
     v1 = c1 - c0

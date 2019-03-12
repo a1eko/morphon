@@ -16,7 +16,8 @@ def parse_args():
         help='list of point types (csv) [2,3,4]')
     parser.add_argument('-e', dest='order', type=str, help='list of branch orders (csv)')
     parser.add_argument('-d', dest='degree', type=str, help='list of branch degrees (csv)')
-    parser.add_argument('-s', dest='step', type=float, default=10.0, help='Sholl radii stepsize (float)')
+    parser.add_argument('-s', dest='step', type=float, default=10.0, help='Sholl radius step (float)')
+    parser.add_argument('-j', dest='proj', type=str, help='2d projection (xy, xz, zy) [3d]')
     parser.add_argument('-o', dest='out', type=str, default='sholl.dat',
         help='output file name (txt) [sholl.dat]')
     return parser.parse_args()
@@ -26,6 +27,13 @@ def main(args):
     m = Morph()
     m.load(args.file)
     types = set(int(item) for item in args.type.replace(',', ' ').split(' '))
+    if args.proj:
+        if args.proj.lower() == 'xy':
+            m.scale([1,1,0])
+        elif args.proj.lower() == 'xz':
+            m.scale([1,0,1])
+        elif args.proj.lower() == 'zy':
+            m.scale([0,1,1])
     if args.order:
         orders = set(int(item) for item in args.order.replace(',', ' ').split(' '))
     else:

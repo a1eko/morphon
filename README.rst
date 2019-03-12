@@ -4,7 +4,7 @@ morphon
 
 Neuron morphology processing scripts:
 
-- ``mcheck`` - test morphology reconstruction for structural consistency
+: ``mcheck`` : test morphology reconstruction for structural consistency
 - ``mfind`` - find singularities in morphological reconstruction
 - ``mmeter`` - morphometric analysis
 - ``mmod`` - morphology modification

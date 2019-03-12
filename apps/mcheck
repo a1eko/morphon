@@ -88,6 +88,16 @@ def main(args):
                     path = list(m.traverse(item, reverse=True))
                     if path[-1] != 1:
                         nodes.append(path[-1])
+            elif args.err == 'nonzero_diam':
+                for item in m.nodes:
+                    if m.diam(item) == 0:
+                        nodes.append(item)
+            elif args.err == 'sequential_ids':
+                node = 0
+                for item in sorted(m.nodes):
+                    if item - node > 1:
+                        nodes.append(item)
+                    node = item
             for node in nodes:
                 print(node, end=' ')
             print()

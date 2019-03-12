@@ -1,2 +1,3 @@
 # morphon
-Neuron morphology processing tools.
+
+Neuron morphology processing scripts.

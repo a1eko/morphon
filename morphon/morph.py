@@ -1,5 +1,5 @@
 from __future__ import division, absolute_import
-from builtins import list, dict, filter, all, sum
+from builtins import list, dict, filter, all, sum, min, max, range
 import numpy as np
 import math
 import copy
@@ -174,6 +174,8 @@ class Morph(Nodes):
         rep['increasing_id_order'] = all(self.parent(item) < item
             for item in filter(lambda i: not self.is_root(i), self.nodes))
         rep['valid_types'] = all(self.type(item) in Point.TYPES for item in self.nodes)
+        rep['nonzero_diam'] = all(self.diam(item) != 0 for item in self.nodes)
+        rep['sequential_ids'] = sorted(self.nodes) == list(range(min(self.nodes), max(self.nodes)+1))
         soma = list(filter(self.is_soma, self.nodes))
         if soma:
             rep['unit_id_in_soma'] = 1 in soma

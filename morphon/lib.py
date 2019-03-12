@@ -84,7 +84,7 @@ import matplotlib.pyplot as plt
 def plot(m=None, secpts=[], ax=None, fig=None, **kwargs):
     if ax is None:
         if fig is None:
-            fig = plt.figure()
+            fig = plt.figure(figsize=(8, 8))
         ax = Axes3D(fig)
         ax.xaxis.pane.set_edgecolor('w')
         ax.yaxis.pane.set_edgecolor('w')
@@ -110,25 +110,6 @@ def plot(m=None, secpts=[], ax=None, fig=None, **kwargs):
     ax.set_zlim((ymin+ymax-smax)/2, (ymin+ymax+smax)/2)
     ax.set_ylim((zmin+zmax-smax)/2, (zmin+zmax+smax)/2)
     return fig, ax
-
-
-def repair_cut0(m, ident, src):
-    root = m.root()
-    cs = np.array(list(m.coord(item) for item in m.section(src)))
-    c0 = m.coord(src)
-    c1 = np.mean(cs.transpose(), axis=1)
-    v0 = c1 - c0
-    c0 = m.coord(list(m.section(ident, reverse=True))[-1])
-    c1 = m.coord(ident)
-    v1 = c1 - c0
-    n = m.copy(src)
-    axis, angle = rotation(v0, v1)
-    n.rotate(axis, angle)
-    c0 = n.coord(n.root())
-    c1 = m.coord(ident)
-    c1 += c1 - m.coord(m.parent(ident))
-    n.translate(c1-c0)
-    m.graft(ident, n)
 
 
 def repair_cut(m, ident, src, flip_z=False):

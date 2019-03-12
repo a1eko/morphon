@@ -18,10 +18,10 @@ See command line help and usage messages for details.
 Installation
 ~~~~~~~~~~~~
 
-Install using ``pip``:
+Install using `pip`:
 
 .. code-block:: python
 
    pip install morphon
 
-See ``pip`` documentation for alternatives.
+See `pip` documentation for installation alternatives.

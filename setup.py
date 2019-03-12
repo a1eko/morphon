@@ -1,9 +1,15 @@
 import setuptools
 
+
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
+
 setuptools.setup(name="morphon",
-    version="0.0.2.dev1",
+    version="0.0.2.dev3",
     description="Neuron morphology processing scripts",
-    long_description="Neuron morphology processing scripts",
+    long_description=readme(),
     author="Alexander Kozlov",
     author_email="akozlov@kth.se",
     url="https://github.com/a1eko/morphon",

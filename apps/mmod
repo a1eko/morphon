@@ -54,11 +54,12 @@ def main(args):
             c[i] = v
         vprint('scale x,y,z,r', c)
         c0 = m.coord(m.root())
+        c1 = c0 * c[:3]
+        v1 = c1 - c0
         for sec in select(m, m.sections(), types=types, orders=orders, degrees=degrees):
             for ident in sec:
-                c1 = m.coord(ident)
-                v1 = c1 - c0
-                m.nodes[ident].value[1] += c[:3]*v1 - c1
+                m.nodes[ident].value[1] *= c[:3]
+                m.nodes[ident].value[1] -= v1
                 m.nodes[ident].value[2] *= c[3]
     if args.seed:
         np.random.seed(args.seed)

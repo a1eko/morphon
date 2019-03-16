@@ -12,9 +12,9 @@ import math
 from matplotlib import pyplot as plt
 
 
-def _draw_sphere(ax, origin, radius):
-    u = np.linspace(0, np.pi, 20)
-    v = np.linspace(0, 2*np.pi, 20)
+def _draw_sphere(ax, origin, radius, n=20):
+    u = np.linspace(0, np.pi, n)
+    v = np.linspace(0, 2*np.pi, n)
     x = origin[0] + radius*np.outer(np.sin(u), np.sin(v))
     y = origin[1] + radius*np.outer(np.sin(u), np.cos(v))
     z = origin[2] + radius*np.outer(np.cos(u), np.ones_like(v))

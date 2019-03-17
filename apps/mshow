@@ -112,10 +112,10 @@ def main(args):
         xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin
         if args.proj and args.proj.lower() == 'xz':
             ax.plot([xmax, xmax], [ymin, ymin+args.scale], [zmax, zmax], color='k', linewidth=3)
-            ax.text3D(xmax, ymin+args.scale/2, zmax, '  ' + str(args.scale))
+            ax.text3D(xmax, ymin+args.scale/2, zmax, '  ' + str(args.scale) + ' um')
         else:
             ax.plot([xmax, xmax], [zmax, zmax], [ymax, ymax-args.scale], color='k', linewidth=3)
-            ax.text3D(xmax, zmax, ymax-args.scale/2, '  ' + str(args.scale))
+            ax.text3D(xmax, zmax, ymax-args.scale/2, '  ' + str(args.scale) + ' um')
     plt.show() if not args.out else plt.savefig(args.out)
 
 

@@ -12,7 +12,7 @@ Neuron morphology processing scripts:
 - ``msholl``  Sholl analysis of morphological reconstruction
 - ``mshow``   view neuron morphology
 
-See command line help and usage messages for details.
+See command line help for details.
 
 
 Installation
@@ -24,7 +24,7 @@ Install the latest release:
 
    pip install morphon
 
-Install the development version:
+Install a development version:
 
 .. code-block:: python
 

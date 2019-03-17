@@ -37,5 +37,7 @@ setuptools.setup(name="morphon",
         "neuron",
         "morphology",
         "reconstruction",
-        "morphometry"),
+        "morphometry",
+        "modification",
+        "repair"),
 )

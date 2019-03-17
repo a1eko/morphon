@@ -18,10 +18,16 @@ See command line help and usage messages for details.
 Installation
 ~~~~~~~~~~~~
 
-Install using ``pip``:
+Install the latest release:
 
 .. code-block:: python
 
    pip install morphon
+
+Install the development version:
+
+.. code-block:: python
+
+   pip install git+git://github.com/a1eko/morphon
 
 See ``pip`` documentation for installation alternatives.

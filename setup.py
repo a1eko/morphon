@@ -7,7 +7,7 @@ def readme():
 
 
 setuptools.setup(name="morphon",
-    version="0.0.4.dev1",
+    version="0.0.4",
     description="Neuron morphology processing scripts",
     long_description=readme(),
     author="Alexander Kozlov",

@@ -10,7 +10,7 @@ Neuron morphology processing scripts:
 - ``mmod``    modify morphology
 - ``mrep``    repair or correct neuron morphology
 - ``msholl``  Sholl analysis of morphological reconstruction
-- ``mshow``   view neuron morphology
+- ``mview``   view neuron morphology
 
 See command line help for details.
 

@@ -3,10 +3,11 @@
 "Repair or correct neuron morphology"
 
 from __future__ import print_function, division
-from builtins import list, dict, set, sum, abs, min, str
+from builtins import list, dict, set, sum, abs, min, max, str
 from morphon import Morph, select, rotation, repair_cut, resample
 import numpy as np
 import argparse
+import math
 import sys
 
 
@@ -16,12 +17,17 @@ def recycle(a):
     return x
 
 
+def _norm(v):
+    return math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('file', type=str, help='input morphology file (swc)')
     parser.add_argument('-d', dest='diam', type=str, help='list of node IDs (csv)')
     parser.add_argument('-z', dest='jump', type=str, help='list of node IDs (csv)')
     parser.add_argument('-b', dest='bridge', type=str, help='list of node IDs (csv)')
+    parser.add_argument('-t', dest='tilt', type=str, help='list of node IDs (csv)')
     parser.add_argument('-c', dest='cuts', type=str, help='list of node IDs (csv)')
     parser.add_argument('-s', dest='seed', type=int, help='random seed value (int)')
     parser.add_argument('-k', dest='shrink', type=str,
@@ -65,6 +71,18 @@ def main(args):
             c0 = m.coord(parent)
             c1 = m.coord(item)
             m.move(item, (c0-c1)/2)
+    if args.tilt:
+        idents = list(int(item) for item in args.tilt.replace(',', ' ').split(' '))
+        for ident in idents:
+            parent = m.parent(ident)
+            cp = m.coord(parent)
+            c0 = m.coord(ident)
+            d0 = c0[2]-cp[2]
+            ll = max(_norm(m.coord(item)-c0) for item in m.leaves(ident))
+            for item in m.traverse(ident):
+                cx = m.coord(item)
+                lx = _norm(cx-c0)
+                m.move(item, (0, 0, d0/ll*(lx-ll)))
     if args.seed:
         np.random.seed(args.seed)
     if args.cuts:

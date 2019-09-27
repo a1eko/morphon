@@ -106,7 +106,7 @@ def main(args):
                 for branch in branches:
                     x, y, z = m.coord(branch)
                     ax.text3D(x, z, y, '  ' + str(branch))
-            plot(m, [branches], ax, marker='o', linestyle='', alpha=0.5)
+            #plot(m, [branches], ax, marker='o', linestyle='', alpha=0.5)
     if args.scale > 0 and args.no_axes:
         xmax, ymax, zmax = ax.xy_dataLim.xmax, ax.xy_dataLim.ymax, ax.zz_dataLim.xmax
         xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin

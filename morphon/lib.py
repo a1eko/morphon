@@ -28,30 +28,42 @@ def _sample(c, r, h):
 def resample(morph, res):
     m = morph.copy()
     count = max(m.nodes.keys())+1
-    for stem in m.stems():
-        for sec in m.sections(stem):
+    for stem in morph.stems():
+        for sec in morph.sections(stem):
             length = sum(m.length(item) for item in sec)
-            if length > res:
-                pttype = m.type(sec[0])
-                parent = m.parent(sec[0])
-                idents = [parent] + sec
-                sec_coords = np.array(list(m.coord(item) for item in idents))
-                sec_radii = np.array(list(m.radius(item) for item in idents))
-                new_coords, new_radii = _sample(sec_coords, sec_radii, res)
-                if len(new_coords) > 0:
+            pttype = m.type(sec[0])
+            parent = m.parent(sec[0])
+            idents = [parent] + sec if not m.is_root(parent) else sec
+            sec_coords = np.array(list(m.coord(item) for item in idents))
+            sec_radii = np.array(list(m.radius(item) for item in idents))
+            new_coords, new_radii = _sample(sec_coords, sec_radii, res)
+            if len(new_coords) > 0:
+                if m.is_root(parent):
+                    new_coords = np.insert(new_coords, 0, m.coord(sec[0]), axis=0)
+                    new_radii = np.insert(new_radii, 0, m.radius(sec[0]), axis=0)
+                for item in sec[:-1]:
+                    m.remove(item)
+                item = sec[-1]
+                for coord, radius in zip(new_coords[-1::-1], new_radii[-1::-1]):
+                    node = Node(count)
+                    node.value = [pttype, coord, radius]
+                    m.insert(item, node)
+                    item = count
+                    count += 1
+            else:
+                start = Node(count)
+                start.value = [m.type(sec[0]), m.coord(sec[0]), m.radius(sec[0])]
+                count += 1
+                end = Node(count)
+                end.value = [m.type(sec[-1]), m.coord(sec[-1]), m.radius(sec[-1])]
+                count += 1
+                if len(sec) > 1:
                     for item in sec[:-1]:
                         m.remove(item)
-                    item = sec[-1]
-                    for coord, radius in zip(new_coords[-1::-1], new_radii[-1::-1]):
-                        node = Node(count)
-                        node.value = [pttype, coord, radius]
-                        m.insert(item, node)
-                        item = count
-                        count += 1
-                else:
-                    if len(sec) > 1:
-                        for item in sec[:-1]:
-                            m.remove(item)
+                if m.is_root(parent):
+                    m.insert(sec[-1], start)
+                m.insert(sec[-1], end)
+                m.remove(sec[-1])
     m.renumber()
     return m
 

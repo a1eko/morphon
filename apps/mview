@@ -21,12 +21,32 @@ def _draw_sphere(ax, origin, radius, n=20):
     ax.plot_surface(x, z, y, color='grey', alpha=0.2)
 
 
+def _draw_cylinder(ax, center1, center2, radius1, radius2, n=5):
+    v = center2 - center1
+    mag = np.linalg.norm(v)
+    v = v / mag
+    not_v = np.array([1, 1, 0])
+    if (v == not_v).all():
+        not_v = np.array([0, 1, 0])
+    n1 = np.cross(v, not_v)
+    n1 /= np.linalg.norm(n1)
+    n2 = np.cross(v, n1)
+    t = np.linspace(0, mag, 2)
+    theta = np.linspace(0, 2*np.pi, n)
+    t, theta = np.meshgrid(t, theta)
+    R = np.linspace(radius1, radius2, 2)
+    X, Y, Z = [center1[i] + v[i]*t + R*np.sin(theta)*n1[i] 
+        + R*np.cos(theta)*n2[i] for i in [0, 1, 2]]
+    ax.plot_surface(X, Z, Y, color='grey', linewidth=0, antialiased=False, alpha=0.1)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('file', type=str, nargs='+', help='input morphology file (swc)')
     parser.add_argument('-j', dest='proj', type=str, help='projection (xy, xz, zy) [3d]')
     parser.add_argument('-p', dest='type', type=str, default='1,2,3,4',
         help='list of point types (csv) [1,2,3,4]')
+    parser.add_argument('-d', dest='diam', action='store_true', help='show dendrite diameter')
     parser.add_argument('-m', dest='mark', action='append', help='list of marker IDs (csv)')
     parser.add_argument('-mi', dest='marker_ids', action='store_true', help='show marker IDs')
     parser.add_argument('-b', dest='branch', action='append', help='list of branch IDs (csv)')
@@ -82,11 +102,17 @@ def main(args):
         plot(m, select(m, m.sections(with_parent=True), types=[4], sec=True), ax, color='g', linewidth=1)
     if types.difference([1,2,3,4]):
         plot(m, select(m, m.sections(with_parent=True), types=types.difference([1,2,3,4])),
-            ax, linestyle='', marker='.')
+            ax, color='lightgrey', linewidth=1)
     if 1 in types:
         root = m.root()
-        _draw_sphere(ax, m.coord(root), m.radius(root))
+        if not args.diam:
+            _draw_sphere(ax, m.coord(root), m.radius(root))
         plot(m, [[root]], ax, color='k', marker='o')
+    if args.diam:
+        for sec in select(m, m.sections(), types=types.difference([1,2]), sec=True):
+            for item in sec:
+                parent = m.parent(item)
+                _draw_cylinder(ax, m.coord(parent), m.coord(item), m.radius(parent), m.radius(item))
     if args.mark:
         for markers in args.mark:
             markers = list(int(item) for item in markers.replace(',', ' ').split(' '))

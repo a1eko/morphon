@@ -7,7 +7,7 @@ def readme():
 
 
 setuptools.setup(name="morphon",
-    version="0.0.5.dev4",
+    version="0.0.6dev1",
     description="Neuron morphology processing scripts",
     long_description=readme(),
     author="Alexander Kozlov",
@@ -33,11 +33,11 @@ setuptools.setup(name="morphon",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
     ],
-    keywords=(
+    keywords=[
         "neuron",
         "morphology",
         "reconstruction",
         "morphometry",
         "modification",
-        "repair"),
+        "repair"],
 )

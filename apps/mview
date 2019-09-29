@@ -12,16 +12,16 @@ import math
 from matplotlib import pyplot as plt
 
 
-def _draw_sphere(ax, origin, radius, n=20):
+def _draw_sphere(ax, origin, radius, n=20, **kwargs):
     u = np.linspace(0, np.pi, n)
     v = np.linspace(0, 2*np.pi, n)
     x = origin[0] + radius*np.outer(np.sin(u), np.sin(v))
     y = origin[1] + radius*np.outer(np.sin(u), np.cos(v))
     z = origin[2] + radius*np.outer(np.cos(u), np.ones_like(v))
-    ax.plot_surface(x, z, y, color='grey', alpha=0.2)
+    ax.plot_surface(x, z, y, **kwargs)
 
 
-def _draw_cylinder(ax, center1, center2, radius1, radius2, n=5):
+def _draw_cylinder(ax, center1, center2, radius1, radius2, n=8, **kwargs):
     v = center2 - center1
     mag = np.linalg.norm(v)
     v = v / mag
@@ -32,12 +32,12 @@ def _draw_cylinder(ax, center1, center2, radius1, radius2, n=5):
     n1 /= np.linalg.norm(n1)
     n2 = np.cross(v, n1)
     t = np.linspace(0, mag, 2)
-    theta = np.linspace(0, 2*np.pi, n)
+    theta = np.linspace(0, 2*np.pi, n+1)
     t, theta = np.meshgrid(t, theta)
     R = np.linspace(radius1, radius2, 2)
     X, Y, Z = [center1[i] + v[i]*t + R*np.sin(theta)*n1[i] 
         + R*np.cos(theta)*n2[i] for i in [0, 1, 2]]
-    ax.plot_surface(X, Z, Y, color='grey', linewidth=0, antialiased=False, alpha=0.1)
+    ax.plot_surface(X, Z, Y, **kwargs)
 
 
 def parse_args():
@@ -106,13 +106,14 @@ def main(args):
     if 1 in types:
         root = m.root()
         if not args.diam:
-            _draw_sphere(ax, m.coord(root), m.radius(root))
+            _draw_sphere(ax, m.coord(root), m.radius(root), n=20, color='grey', alpha=0.2)
         plot(m, [[root]], ax, color='k', marker='o')
     if args.diam:
         for sec in select(m, m.sections(), types=types.difference([1,2]), sec=True):
             for item in sec:
                 parent = m.parent(item)
-                _draw_cylinder(ax, m.coord(parent), m.coord(item), m.radius(parent), m.radius(item))
+                _draw_cylinder(ax, m.coord(parent), m.coord(item), m.radius(parent), m.radius(item), 
+                        n=6, color='grey', linewidth=0, antialiased=False, alpha=0.1)
     if args.mark:
         for markers in args.mark:
             markers = list(int(item) for item in markers.replace(',', ' ').split(' '))

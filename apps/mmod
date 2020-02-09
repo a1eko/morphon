@@ -126,7 +126,7 @@ def main(args):
         vprint('nodes renumbered')
     if args.twist:
         sections = select(m, m.sections(), types=types, orders=orders, degrees=degrees, sec=True)
-        bifurcations = filter(m.is_bifurcation, list(sec[-1] for sec in sections))
+        bifurcations = list(filter(m.is_bifurcation, list(sec[-1] for sec in sections)))
         for i in range(args.twist):
             if bifurcations:
                 ident = np.random.choice(bifurcations)

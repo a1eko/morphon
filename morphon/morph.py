@@ -176,6 +176,7 @@ class Morph(Nodes):
         rep['valid_types'] = all(self.type(item) in Point.TYPES for item in self.nodes)
         rep['nonzero_diam'] = all(self.diam(item) != 0 for item in self.nodes)
         rep['sequential_ids'] = sorted(self.nodes) == list(range(min(self.nodes), max(self.nodes)+1))
+        rep['no_forks'] = all(len(self.nodes[ident].children) == 2 for ident in self.forks() if not self.is_root(ident))
         soma = list(filter(self.is_soma, self.nodes))
         if soma:
             rep['unit_id_in_soma'] = 1 in soma

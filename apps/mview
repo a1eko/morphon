@@ -40,6 +40,23 @@ def _draw_cylinder(ax, center1, center2, radius1, radius2, n=8, **kwargs):
     ax.plot_surface(X, Z, Y, **kwargs)
 
 
+def _plot_mesh(ax, obj, mesh_surface=False):
+    import logging
+    logging.disable(logging.CRITICAL)
+    # soft dependency trimesh with Shapely and Rtree (and optionally pyembree)
+    import trimesh
+    mesh = trimesh.load(obj)
+    d = mesh.to_dict()
+    x = [v[0] for v in mesh.vertices]
+    y = [v[1] for v in mesh.vertices]
+    z = [v[2] for v in mesh.vertices]
+    if mesh_surface:
+        ax.plot_trisurf(x, z, y, triangles=d['faces'], alpha=0.05)
+    else:
+        ax.plot(x, z, y, ',', alpha=0.25)
+    logging.disable(logging.NOTSET)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('file', type=str, nargs='+', help='input morphology file (swc)')
@@ -49,12 +66,16 @@ def parse_args():
     parser.add_argument('-d', dest='diam', action='store_true', help='show dendrite diameter')
     parser.add_argument('-m', dest='mark', action='append', help='list of marker IDs (csv)')
     parser.add_argument('-mi', dest='marker_ids', action='store_true', help='show marker IDs')
+    parser.add_argument('-ms', dest='marker_small', action='store_true', help='small marker')
     parser.add_argument('-b', dest='branch', action='append', help='list of branch IDs (csv)')
     parser.add_argument('-c', dest='color', action='store_true', help='colorize multiple plots')
     parser.add_argument('-a', dest='no_axes', action='store_true', help='disable axes')
     parser.add_argument('-s', dest='scale', type=float, default=0.0, help='show scale bar, um')
+    parser.add_argument('-sn', dest='scale_nonumber', action='store_true', help='do not show scale value')
     parser.add_argument('-t', dest='title', type=str, help='set figure title')
     parser.add_argument('-o', dest='out', type=str, help='save image to file')
+    parser.add_argument('-x', dest='mesh', type=str, action='append', help='mesh object (obj)')
+    parser.add_argument('-xs', dest='mesh_surface', action='store_true', help='show mesh surface')
     return parser.parse_args()
 
 
@@ -90,7 +111,7 @@ def main(args):
             n.load(morphology)
             if args.color:
                 plot(n, select(n, n.sections(with_parent=True), types=types, sec=True),
-                    ax, color=cycle['color'], linewidth=1)
+                    ax, color=cycle['color'], linewidth=0.5)
             else:
                 plot(n, select(n, n.sections(with_parent=True), types=types, sec=True),
                     ax, color='#cccccc', linewidth=3, alpha=0.5)
@@ -117,7 +138,10 @@ def main(args):
     if args.mark:
         for markers in args.mark:
             markers = list(int(item) for item in markers.replace(',', ' ').split(' '))
-            plot(m, [markers], ax, marker='o', linestyle='', alpha=0.5)
+            if args.marker_small:
+                plot(m, [markers], ax, marker=',', linestyle='', color='red')
+            else:
+                plot(m, [markers], ax, marker='o', linestyle='', alpha=0.5)
             if args.marker_ids:
                 plt.rcParams.update({'font.size': 8})
                 for marker in markers:
@@ -139,10 +163,23 @@ def main(args):
         xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin
         if args.proj and args.proj.lower() == 'xz':
             ax.plot([xmax, xmax], [ymin, ymin+args.scale], [zmax, zmax], color='k', linewidth=3)
-            ax.text3D(xmax, ymin+args.scale/2, zmax, '  ' + str(args.scale) + ' um')
+            if not args.scale_nonumber:
+                ax.text3D(xmax, ymin+args.scale/2, zmax, '  ' + str(args.scale) + ' $\mu$m')
         else:
             ax.plot([xmax, xmax], [zmax, zmax], [ymax, ymax-args.scale], color='k', linewidth=3)
-            ax.text3D(xmax, zmax, ymax-args.scale/2, '  ' + str(args.scale) + ' um')
+            if not args.scale_nonumber:
+                ax.text3D(xmax, zmax, ymax-args.scale/2, '  ' + str(args.scale) + ' $\mu$m')
+    if args.mesh:
+        for f in args.mesh:
+            _plot_mesh(ax, f, mesh_surface=args.mesh_surface)
+
+    xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin
+    xmax, ymax, zmax = ax.xy_dataLim.xmax, ax.xy_dataLim.ymax, ax.zz_dataLim.xmax
+    smax = max(max(ax.xy_dataLim.size), max(ax.zz_dataLim.size))
+    ax.set_xlim((xmin+xmax-smax)/2, (xmin+xmax+smax)/2)
+    ax.set_zlim((ymin+ymax-smax)/2, (ymin+ymax+smax)/2)
+    ax.set_ylim((zmin+zmax-smax)/2, (zmin+zmax+smax)/2)
+
     plt.show() if not args.out else plt.savefig(args.out)
 
 

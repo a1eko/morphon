@@ -98,6 +98,10 @@ def main(args):
                     if item - node > 1:
                         nodes.append(item)
                     node = item
+            elif args.err == 'no_forks':
+                for item in m.forks():
+                    if not m.is_bifurcation(item) and not m.is_root(item):
+                        nodes.append(item)
             for node in nodes:
                 print(node, end=' ')
             print()

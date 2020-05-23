@@ -114,13 +114,10 @@ def plot(m=None, secpts=[], ax=None, fig=None, **kwargs):
     for sec in secpts:
         c = np.array(list(m.coord(item) for item in sec))
         x, y, z = c[:,0], c[:,1], c[:,2]
-        ax.plot(x, z, y, **kwargs)
-    xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin
-    xmax, ymax, zmax = ax.xy_dataLim.xmax, ax.xy_dataLim.ymax, ax.zz_dataLim.xmax
-    smax = max(max(ax.xy_dataLim.size), max(ax.zz_dataLim.size))
-    ax.set_xlim((xmin+xmax-smax)/2, (xmin+xmax+smax)/2)
-    ax.set_zlim((ymin+ymax-smax)/2, (ymin+ymax+smax)/2)
-    ax.set_ylim((zmin+zmax-smax)/2, (zmin+zmax+smax)/2)
+        if len(x) > 1:
+            ax.plot(x, z, y, **kwargs)
+        else:
+            ax.scatter(x, z, y, **kwargs)
     return fig, ax
 
 

@@ -74,8 +74,12 @@ def parse_args():
     parser.add_argument('-sn', dest='scale_nonumber', action='store_true', help='do not show scale value')
     parser.add_argument('-t', dest='title', type=str, help='set figure title')
     parser.add_argument('-o', dest='out', type=str, help='save image to file')
-    parser.add_argument('-x', dest='mesh', type=str, action='append', help='mesh object (obj)')
-    parser.add_argument('-xs', dest='mesh_surface', action='store_true', help='show mesh surface')
+    try:
+        import trimesh
+        parser.add_argument('-x', dest='mesh', type=str, action='append', help='mesh object (obj)')
+        parser.add_argument('-xs', dest='mesh_surface', action='store_true', help='show mesh surface')
+    except:
+        pass
     return parser.parse_args()
 
 

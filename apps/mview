@@ -173,9 +173,13 @@ def main(args):
             ax.plot([xmax, xmax], [zmax, zmax], [ymax, ymax-args.scale], color='k', linewidth=3)
             if not args.scale_nonumber:
                 ax.text3D(xmax, zmax, ymax-args.scale/2, '  ' + str(args.scale) + ' $\mu$m')
-    if args.mesh:
-        for f in args.mesh:
-            _plot_mesh(ax, f, mesh_surface=args.mesh_surface)
+    try:
+        import trimesh
+        if args.mesh:
+            for f in args.mesh:
+                _plot_mesh(ax, f, mesh_surface=args.mesh_surface)
+    except:
+        pass
 
     xmin, ymin, zmin = ax.xy_dataLim.xmin, ax.xy_dataLim.ymin, ax.zz_dataLim.xmin
     xmax, ymax, zmax = ax.xy_dataLim.xmax, ax.xy_dataLim.ymax, ax.zz_dataLim.xmax

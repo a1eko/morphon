@@ -118,7 +118,7 @@ def main(args):
                     ax, color=cycle['color'], linewidth=0.5)
             else:
                 plot(n, select(n, n.sections(with_parent=True), types=types, sec=True),
-                    ax, color='#cccccc', linewidth=3, alpha=0.5)
+                    ax, color='lightgrey', linewidth=3)
     if 2 in types:
         plot(m, select(m, m.sections(with_parent=True), types=[2], sec=True), ax, color='grey',  linewidth=0.5)
     if 3 in types:

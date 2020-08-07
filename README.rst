@@ -31,3 +31,5 @@ Install a development version:
    pip install git+git://github.com/a1eko/morphon
 
 See ``pip`` documentation for installation alternatives.
+
+For an updated trimmed and streamlined version of this package, see `treem <https://github.com/a1eko/treem>`_.
